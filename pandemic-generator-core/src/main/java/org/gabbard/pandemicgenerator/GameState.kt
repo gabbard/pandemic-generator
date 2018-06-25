@@ -62,13 +62,13 @@ data class GameState(
                 singles.plus(doubles).plus(triples).toMap())
     }
 
-    fun infect(): Pair<GameState, Set<City>> {
+    fun infect(): Pair<GameState, List<City>> {
         val (infectionCards, newInfectionDeckState) =
                 infectionDeck.draw(infectionRate.numInfectionCardsToDraw)
 
         return Pair(copy(infectionDeck = newInfectionDeckState,
                 infectionDiscardPile = infectionDiscardPile.union(infectionCards).toSet()),
-                infectionCards.map { it.city }.toSet())
+                infectionCards.map { it.city }.toList())
     }
 
     data class EpidemicExecutionResult(val newCity: City, val newGameState: GameState)
