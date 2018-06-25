@@ -29,14 +29,9 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
         val epidemics = chooseDistinct(availableEpidemics, numEpidemicsToUse, rng).toList()
 
         val cardsPerBatch = ceil(deckForPlayerHands.cards.size / epidemics.size.toDouble()).toInt()
-        val batchesToEpidemics = deckForPlayerHands.cards.asSequence().batch(cardsPerBatch).toList()
-                .zip(epidemics)
-        val shuffledBatches = batchesToEpidemics.map { Deck(it.first.plus(it.second)).shuffled(rng) }
-        val playerDeck = Deck(shuffledBatches
-                .map { it.cards }.flatten())
-        /*val playerDeck = Deck(deckForPlayerHands.cards.asSequence().batch(cardsPerBatch).toList()
+        val playerDeck = Deck(deckForPlayerHands.cards.asSequence().batch(cardsPerBatch).toList()
                 .zip(epidemics).map { Deck(it.first.plus(it.second)).shuffled(rng) }
-                .map { it.cards }.flatten())*/
+                .map { it.cards }.flatten())
 
         return GameState(curPlayer = 0, players = players, hands = playerHands,
                 infectionDeck = infectionDeck, playerDeck = playerDeck,
