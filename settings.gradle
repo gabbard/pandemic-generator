@@ -1,0 +1,1 @@
+include ':app', ':pandemic-generator-core'
