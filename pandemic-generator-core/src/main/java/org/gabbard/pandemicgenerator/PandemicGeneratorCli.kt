@@ -11,18 +11,17 @@ val INFECT_PHASE = 1
 fun main(args: Array<String>) {
     print("Enter random seed: ")
     val rng = Random(readLine()!!.toLong())
-    val (initialState, initialInfections) = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng)
-            .drawInitialEpidemicCards()
+    val initialState = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng)
 
-    print(initialState.hands.entries.joinToString(separator = "\n")
+    print(initialState.untrackableState.hands.entries.joinToString(separator = "\n")
     { "${it.key}'s hand is ${it.value}" })
     print("\n")
 
-    print("Initial infections: $initialInfections\n")
-    val history = Stack<GameState>()
-    history.push(initialState)
+    print("Initial board state: ${initialState.untrackableState.board}\n")
+    val history = Stack<TrackableState>()
 
-    var curState = initialState
+    var curState = initialState.trackableState
+    history.push(curState)
 
     var phase = 0
 
@@ -59,9 +58,6 @@ fun main(args: Array<String>) {
         history.push(curState)
         togglePhase()
     }
-
-    // TODO: player hands need to be migrated to a separate state object because we won't track
-    // those, unlike the decks
 
     while (true) {
         val nextPhaseName = when (phase) {
