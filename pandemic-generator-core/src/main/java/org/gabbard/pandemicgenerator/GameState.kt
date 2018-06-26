@@ -31,7 +31,8 @@ data class TrackableState(val curPlayer: Int,
                           val infectionDeck: Deck<InfectionCard>,
                           val infectionDiscardPile: Set<InfectionCard>,
                           val playerDeck: Deck<PlayerCard>,
-                          val infectionRate: InfectionRate) {
+                          val infectionRate: InfectionRate,
+                          val lastTransition: Transition) {
     init {
         require(players.size in 2..4)
         require(curPlayer in 0..(players.size - 1))
@@ -42,25 +43,61 @@ data class TrackableState(val curPlayer: Int,
                 == ALL_CITIES)
     }
 
-    data class DrawPlayerCardsResult(val drawnCards: List<PlayerCard>, val newState: TrackableState)
+    data class TransitionResult(val newGameState: TrackableState, val message: String)
 
-    fun drawPlayerCards(): DrawPlayerCardsResult {
+    fun executeTransition(transition: Transition, rng: Random): TransitionResult {
+        when (transition) {
+            Transition.INFECT -> {
+                val infectionResult = infect()
+                return TransitionResult(infectionResult.newGameState.copy(lastTransition = transition),
+                        "The following cities were infected: " +
+                                "${infectionResult.infectedCities}")
+            }
+            Transition.DRAW_PLAYER_CARDS -> {
+                val msg = StringBuilder()
+                val (cardsDrawn, postDrawState) = drawPlayerCards()
+                var curState = postDrawState
+                val epidemics = cardsDrawn.filterIsInstance<Epidemic>()
+                msg.append("Drew: $cardsDrawn\n\n")
+                for (epidemic in epidemics) {
+                    msg.append("Executing $epidemic\n")
+                    val (newCity, postEpidemicGameState) = curState.executeEpidemic(rng)
+                    msg.append("Epidemic infects $newCity\n\n")
+                    curState = postEpidemicGameState
+                }
+                return TransitionResult(curState.copy(lastTransition = transition), msg.toString())
+            }
+        }
+    }
+
+    fun legalTransitions(): Set<Transition> {
+        return when (lastTransition) {
+            Transition.INFECT -> setOf(Transition.DRAW_PLAYER_CARDS)
+            Transition.DRAW_PLAYER_CARDS -> setOf(Transition.INFECT)
+        }
+    }
+
+    private data class DrawPlayerCardsResult(val drawnCards: List<PlayerCard>, val newState: TrackableState)
+
+    private fun drawPlayerCards(): DrawPlayerCardsResult {
         val (drawnCards, newPlayerCardDeck) = playerDeck.draw(2)
         return DrawPlayerCardsResult(drawnCards, copy(playerDeck = newPlayerCardDeck))
     }
 
-    fun infect(): Pair<TrackableState, List<City>> {
+    private data class InfectionResult(val newGameState: TrackableState, val infectedCities: List<City>)
+
+    private fun infect(): InfectionResult {
         val (infectionCards, newInfectionDeckState) =
                 infectionDeck.draw(infectionRate.numInfectionCardsToDraw)
 
-        return Pair(copy(infectionDeck = newInfectionDeckState,
+        return InfectionResult(copy(infectionDeck = newInfectionDeckState,
                 infectionDiscardPile = infectionDiscardPile.union(infectionCards).toSet()),
                 infectionCards.map { it.city }.toList())
     }
 
-    data class EpidemicExecutionResult(val newCity: City, val newGameState: TrackableState)
+    private data class EpidemicExecutionResult(val newCity: City, val newGameState: TrackableState)
 
-    fun executeEpidemic(rng: Random): EpidemicExecutionResult {
+    private fun executeEpidemic(rng: Random): EpidemicExecutionResult {
         val newInfectionRate = InfectionRate.values()[infectionRate.ordinal + 1]
         val (infectionCardOffTheBottom, infectionDeckAfterNewCity) = infectionDeck.drawOneFromTheBottom()
         val newInfectionDeck = Deck(infectionDiscardPile.toList().plus(infectionCardOffTheBottom))
@@ -80,4 +117,9 @@ data class GameState(val trackableState: TrackableState, val untrackableState: U
         { it.size == initialHandSize(trackableState.players.size) })
         { "Illegal hand sizes: ${untrackableState.hands}" }
     }
+}
+
+enum class Transition(val humanName: String) {
+    DRAW_PLAYER_CARDS("Draw Player Cards"),
+    INFECT("Infect cities")
 }

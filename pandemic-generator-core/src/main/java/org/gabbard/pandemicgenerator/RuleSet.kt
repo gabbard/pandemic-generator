@@ -46,7 +46,8 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
                 trackableState = TrackableState(curPlayer = 0, players = players,
                         infectionDeck = newInfectionDeckState, playerDeck = playerDeck,
                         infectionRate = InfectionRate.INITIAL,
-                        infectionDiscardPile = initialInfectionCards.toSet()),
+                        infectionDiscardPile = initialInfectionCards.toSet(),
+                        lastTransition = Transition.INFECT),
                 untrackableState = UntrackableState(hands = playerHands,
                         board = initialBoardState))
     }
