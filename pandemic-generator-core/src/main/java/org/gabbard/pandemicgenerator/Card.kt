@@ -1,8 +1,9 @@
 package org.gabbard.pandemicgenerator
 
+import java.io.Serializable
 import java.util.*
 
-sealed class Card {
+sealed class Card : Serializable {
     abstract val userString: String
 }
 
@@ -43,20 +44,20 @@ class EventCard(val name: String) : PlayerCard() {
     override fun toString(): String = userString
 }
 
-data class Deck<CardType : Card>(val cards: List<CardType>) {
+data class Deck<CardType : Card>(val cards: List<CardType>) : Serializable {
     fun shuffled(rng: Random) = Deck(cards.shuffled(rng))
     fun draw(numToDraw: Int): Pair<List<CardType>, Deck<CardType>> {
         require(numToDraw <= cards.size)
-        return Pair(cards.subList(0, numToDraw), Deck(cards.subList(numToDraw, cards.size)))
+        return Pair(cards.subList(0, numToDraw), Deck(cards.subList(numToDraw, cards.size).toList()))
     }
 
     fun drawOneFromTheBottom(): Pair<CardType, Deck<CardType>> {
         require(cards.isNotEmpty())
-        return Pair(cards.last(), Deck(cards.subList(0, cards.size - 1)))
+        return Pair(cards.last(), Deck(cards.subList(0, cards.size - 1).toList()))
     }
 
     fun placeOnTopOf(otherDeck: Deck<CardType>): Deck<CardType> {
-        return Deck(cards.plus(otherDeck.cards))
+        return Deck(cards.plus(otherDeck.cards).toList())
     }
 }
 

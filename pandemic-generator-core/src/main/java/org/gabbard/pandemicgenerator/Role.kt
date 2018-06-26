@@ -1,6 +1,8 @@
 package org.gabbard.pandemicgenerator
 
-data class Role(val name: String) {
+import java.io.Serializable
+
+data class Role(val name: String) : Serializable {
     override fun toString(): String = name
 }
 

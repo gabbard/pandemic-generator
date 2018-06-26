@@ -1,5 +1,6 @@
 package org.gabbard.pandemicgenerator
 
+import java.io.Serializable
 import java.util.*
 
 typealias InitialCubes = Map<City, Int>
@@ -32,7 +33,7 @@ data class TrackableState(val curPlayer: Int,
                           val infectionDiscardPile: Set<InfectionCard>,
                           val playerDeck: Deck<PlayerCard>,
                           val infectionRate: InfectionRate,
-                          val lastTransition: Transition) {
+                          val lastTransition: Transition) : Serializable {
     init {
         require(players.size in 2..4)
         require(curPlayer in 0..(players.size - 1))

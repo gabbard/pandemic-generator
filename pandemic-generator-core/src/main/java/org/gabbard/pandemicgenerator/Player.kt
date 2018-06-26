@@ -1,3 +1,5 @@
 package org.gabbard.pandemicgenerator
 
-data class Player(val role: Role)
+import java.io.Serializable
+
+data class Player(val role: Role) : Serializable
