@@ -33,10 +33,22 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
                 .zip(epidemics).map { Deck(it.first.plus(it.second)).shuffled(rng) }
                 .map { it.cards }.flatten())
 
-        return GameState(curPlayer = 0, players = players, hands = playerHands,
-                infectionDeck = infectionDeck, playerDeck = playerDeck,
-                infectionRate = InfectionRate.INITIAL, infectionDiscardPile = setOf())
+        // initial epidemic cards
+        val (initialInfectionCards, newInfectionDeckState) = infectionDeck.draw(9)
+        val initialBoardState = BoardState(
+                initialInfectionCards.subList(0, 3).map { it to 3 }
+                        .plus(initialInfectionCards.subList(3, 6).map { it to 2 })
+                        .plus(initialInfectionCards.subList(6, 9).map { it to 1 })
+                        .map { it.first.city to CityState(mapOf(it.first.city.color to it.second)) }
+                        .toMap())
 
+        return GameState(
+                trackableState = TrackableState(curPlayer = 0, players = players,
+                        infectionDeck = newInfectionDeckState, playerDeck = playerDeck,
+                        infectionRate = InfectionRate.INITIAL,
+                        infectionDiscardPile = initialInfectionCards.toSet()),
+                untrackableState = UntrackableState(hands = playerHands,
+                        board = initialBoardState))
     }
 }
 
