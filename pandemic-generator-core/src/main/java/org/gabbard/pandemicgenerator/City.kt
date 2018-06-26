@@ -1,10 +1,12 @@
 package org.gabbard.pandemicgenerator
 
+import java.io.Serializable
+
 enum class Color {
     BLUE, YELLOW, BLACK, RED
 }
 
-data class City(val name: String, val color: Color)
+data class City(val name: String, val color: Color) : Serializable
 
 val BLUE_CITIES = setOf("San Francisco", "Toronto", "Chicago", "Washington",
         "Atlanta", "New York", "Madrid", "Essen", "London", "Paris", "Milan", "St. Petersburg")
