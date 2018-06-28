@@ -23,6 +23,10 @@ data class CityState(val infections: Map<Color, Int>) {
     init {
         require(infections.values.all { it in 0..3 }) { "Illegal number of cubes: $infections" }
     }
+
+    override fun toString(): String {
+        return infections.toString()
+    }
 }
 
 data class BoardState(val cityStates: Map<City, CityState>)

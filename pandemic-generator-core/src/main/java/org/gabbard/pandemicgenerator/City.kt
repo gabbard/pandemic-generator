@@ -6,7 +6,11 @@ enum class Color {
     BLUE, YELLOW, BLACK, RED
 }
 
-data class City(val name: String, val color: Color) : Serializable
+data class City(val name: String, val color: Color) : Serializable {
+    override fun toString(): String {
+        return name
+    }
+}
 
 val BLUE_CITIES = setOf("San Francisco", "Toronto", "Chicago", "Washington",
         "Atlanta", "New York", "Madrid", "Essen", "London", "Paris", "Milan", "St. Petersburg")
