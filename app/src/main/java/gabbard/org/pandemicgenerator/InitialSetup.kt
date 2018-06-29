@@ -5,15 +5,15 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 
-class MainActivity : AppCompatActivity() {
+class InitialSetup : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_initial_setup)
     }
 
-    fun startGame(view: View) {
-        val startGameIntent = Intent(this, EnterRandomSeed::class.java)
-        startActivity(startGameIntent)
+    fun readyToPlay(view: View) {
+        val gamePlayIntent = Intent(this, GamePlay::class.java)
+        startActivity(gamePlayIntent)
     }
 }
