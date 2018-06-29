@@ -19,7 +19,7 @@ fun initialHandSize(numPlayers: Int): Int {
     return 6 - numPlayers
 }
 
-data class CityState(val infections: Map<Color, Int>) {
+data class CityState(val infections: Map<Color, Int>) : Serializable {
     init {
         require(infections.values.all { it in 0..3 }) { "Illegal number of cubes: $infections" }
     }
@@ -29,7 +29,7 @@ data class CityState(val infections: Map<Color, Int>) {
     }
 }
 
-data class BoardState(val cityStates: Map<City, CityState>)
+data class BoardState(val cityStates: Map<City, CityState>) : Serializable
 
 data class TrackableState(val curPlayer: Int,
                           val players: List<Player>,
@@ -114,8 +114,10 @@ data class TrackableState(val curPlayer: Int,
 }
 
 data class UntrackableState(val board: BoardState, val hands: Map<Player, Set<PlayerCard>>)
+    : Serializable
 
-data class GameState(val trackableState: TrackableState, val untrackableState: UntrackableState) {
+data class GameState(val trackableState: TrackableState, val untrackableState: UntrackableState)
+    : Serializable {
     init {
         require(trackableState.players.toSet() == untrackableState.hands.keys)
         require(untrackableState.hands.values.all
