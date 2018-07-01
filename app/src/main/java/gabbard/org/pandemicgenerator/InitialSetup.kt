@@ -17,7 +17,16 @@ class InitialSetup : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_initial_setup)
         val initialGameState = intent.getSerializableExtra(INITIAL_GAME_STATE) as GameState
-        player1.text = initialGameState.trackableState.players[0].role.name
+        val players = initialGameState.trackableState.players
+        if (players.size != 2) {
+            throw RuntimeException("Only two players currently supported. Issue #10")
+        }
+        val hands = initialGameState.untrackableState.hands
+        player1.text = players[0].role.name + ": " +
+                hands[players[0]]
+        player2.text = players[1].role.name + ": " +
+                hands[players[1]]
+        board.text = initialGameState.untrackableState.board.cityStates.toString()
     }
 
     fun readyToPlay(view: View) {
