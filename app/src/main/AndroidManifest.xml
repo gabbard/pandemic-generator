@@ -18,7 +18,9 @@
         </activity>
         <activity android:name=".InitialSetup" />
         <activity android:name=".EnterRandomSeed" />
-        <activity android:name=".GamePlay"></activity>
+        <activity android:name=".TurnTimer" />
+        <activity android:name=".DrawPlayerCards" />
+        <activity android:name=".InfectionActivity"></activity>
     </application>
 
 </manifest>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TurnTimer">
+
+    <TextView
+        android:id="@+id/timeRemaining"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        tools:layout_editor_absoluteX="144dp"
+        tools:layout_editor_absoluteY="86dp" />
+
+    <Button
+        android:id="@+id/drawPlayerCards"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onDrawPlayerCards"
+        android:text="Draw Player Cards"
+        tools:layout_editor_absoluteX="130dp"
+        tools:layout_editor_absoluteY="207dp" />
+</android.support.constraint.ConstraintLayout>
