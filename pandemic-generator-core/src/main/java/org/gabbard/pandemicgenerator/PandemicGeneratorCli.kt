@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
 
     print(initialState.untrackableState.hands.entries.joinToString(separator = "\n")
     { "${it.key}'s hand is ${it.value}" })
-    print("\n")
+    print("\n\n\n")
 
     print("Initial board state: ${initialState.untrackableState.board}\n")
     val history = ArrayDeque<TrackableState>()
