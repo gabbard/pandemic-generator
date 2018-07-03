@@ -3,6 +3,7 @@ package org.gabbard.pandemicgenerator
 import java.io.Serializable
 import java.util.*
 
+
 typealias InitialCubes = Map<City, Int>
 
 enum class InfectionRate(val numInfectionCardsToDraw: Int) {
@@ -48,29 +49,45 @@ data class TrackableState(val curPlayer: Int,
                 == ALL_CITIES)
     }
 
-    data class TransitionResult(val newGameState: TrackableState, val message: String)
+    sealed class TransitionResult(open val newGameState: TrackableState) {
+
+        data class InfectionTransitionResult(override val newGameState: TrackableState,
+                                             val infectedCities: List<City>)
+            : TransitionResult(newGameState)
+
+        data class DrawPlayerCardsTransitionResult(
+                override val newGameState: TrackableState,
+                val cardsDrawn: List<PlayerCard>,
+                val epidemicsAndInfectedCities: List<Pair<Epidemic, City>>) : TransitionResult(newGameState) {
+            init {
+                require(cardsDrawn.containsAll(epidemicsAndInfectedCities.map { it.first }))
+            }
+        }
+    }
+
 
     fun executeTransition(transition: Transition, rng: Random): TransitionResult {
         when (transition) {
             Transition.INFECT -> {
                 val infectionResult = infect()
-                return TransitionResult(infectionResult.newGameState.copy(lastTransition = transition),
-                        "The following cities were infected: " +
-                                "${infectionResult.infectedCities}")
+                return TransitionResult.InfectionTransitionResult(
+                        infectionResult.newGameState.copy(lastTransition = transition),
+                        infectionResult.infectedCities)
             }
             Transition.DRAW_PLAYER_CARDS -> {
-                val msg = StringBuilder()
                 val (cardsDrawn, postDrawState) = drawPlayerCards()
                 var curState = postDrawState
                 val epidemics = cardsDrawn.filterIsInstance<Epidemic>()
-                msg.append("Drew: $cardsDrawn\n\n")
+
+                val epidemicsToCitiesInfected = mutableListOf<Pair<Epidemic, City>>()
                 for (epidemic in epidemics) {
-                    msg.append("Executing $epidemic\n")
                     val (newCity, postEpidemicGameState) = curState.executeEpidemic(rng)
-                    msg.append("Epidemic infects $newCity\n\n")
                     curState = postEpidemicGameState
+                    epidemicsToCitiesInfected.add(Pair(epidemic, newCity))
                 }
-                return TransitionResult(curState.copy(lastTransition = transition), msg.toString())
+                return TransitionResult.DrawPlayerCardsTransitionResult(
+                        curState.copy(lastTransition = transition), cardsDrawn,
+                        epidemicsToCitiesInfected)
             }
         }
     }

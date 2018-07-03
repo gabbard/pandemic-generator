@@ -7,6 +7,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.activity_infection.*
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
+import org.gabbard.pandemicgenerator.messageForTransitionResult
 import java.util.*
 
 class InfectionActivity : AppCompatActivity() {
@@ -25,7 +26,7 @@ class InfectionActivity : AppCompatActivity() {
         rng = intent.getSerializableExtra(InfectionActivity.RANDOM_SOURCE) as Random
 
         val infectionResult = gameState!!.executeTransition(Transition.INFECT, rng!!)
-        infectionResultMessage.text = infectionResult.message
+        infectionResultMessage.text = messageForTransitionResult(infectionResult)
         gameState = infectionResult.newGameState
     }
 

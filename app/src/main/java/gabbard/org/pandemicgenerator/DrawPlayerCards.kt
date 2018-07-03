@@ -7,6 +7,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.activity_draw_player_cards.*
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
+import org.gabbard.pandemicgenerator.messageForTransitionResult
 import java.util.*
 
 class DrawPlayerCards : AppCompatActivity() {
@@ -26,7 +27,7 @@ class DrawPlayerCards : AppCompatActivity() {
         val drawResult = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
 
         gameState = drawResult.newGameState
-        drawResultMessage.text = drawResult.message
+        drawResultMessage.text = messageForTransitionResult(drawResult)
     }
 
     fun onProceedToInfectionPhase(view: View) {

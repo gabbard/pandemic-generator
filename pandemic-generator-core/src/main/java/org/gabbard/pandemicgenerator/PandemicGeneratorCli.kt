@@ -14,6 +14,20 @@ val commandToTransition = mapOf("i" to Transition.INFECT, "p" to Transition.DRAW
 val transitionToCommand = mapOf(Transition.INFECT to "i", Transition.DRAW_PLAYER_CARDS to "p")
 
 
+fun messageForTransitionResult(result: TrackableState.TransitionResult): String {
+    return when (result) {
+        is TrackableState.TransitionResult.InfectionTransitionResult ->
+            "The following cities were infected: ${result.infectedCities}"
+        is TrackableState.TransitionResult.DrawPlayerCardsTransitionResult -> {
+            val msg = StringBuilder()
+            msg.append("Drew: ${result.cardsDrawn}\n\n")
+            for ((epidemic, infectedCity) in result.epidemicsAndInfectedCities) {
+                msg.append("$epidemic infects $infectedCity\n\n")
+            }
+            msg.toString()
+        }
+    }
+}
 fun main(args: Array<String>) {
     print("Enter random seed: ")
     val rng = Random(readLine()!!.toLong())
@@ -69,7 +83,7 @@ fun main(args: Array<String>) {
             if (transition != null) {
                 val transitionResult = curState.executeTransition(transition, rng)
                 history.push(transitionResult.newGameState)
-                print("${transitionResult.message}\n")
+                print("${messageForTransitionResult(transitionResult)}\n")
             }
         }
     }
