@@ -1,6 +1,5 @@
 package org.gabbard.pandemicgenerator
 
-import java.lang.Math.ceil
 import java.util.*
 
 data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
@@ -13,10 +12,7 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
 
         val infectionDeck = Deck(cities.map { InfectionCard(it) }).shuffled(rng)
 
-        val cityPlayerCards = cities.map { CityPlayerCard(it) }.toSet()
-        val events = chooseDistinct(availableEvents, numEventsToUse, rng)
-
-        var deckForPlayerHands = Deck(cityPlayerCards.union(events).toList()).shuffled(rng)
+        var deckForPlayerHands = createDeckForPlayerHands(rng)
         val deckItems = mutableListOf<Pair<Player, Set<PlayerCard>>>()
         for (player in players) {
             val (cardsDrawn, newDeck) =
@@ -28,8 +24,9 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
 
         val epidemics = chooseDistinct(availableEpidemics, numEpidemicsToUse, rng).toList()
 
-        val cardsPerBatch = ceil(deckForPlayerHands.cards.size / epidemics.size.toDouble()).toInt()
-        val playerDeck = Deck(deckForPlayerHands.cards.asSequence().batch(cardsPerBatch).toList()
+        val playerDeck = Deck(
+                deckForPlayerHands.splitAsEvenlyAsPossible(epidemics.size)
+                        // add an epidemic to each stack and shuffle it
                 .zip(epidemics).map { Deck(it.first.plus(it.second)).shuffled(rng) }
                 .map { it.cards }.flatten())
 
@@ -51,6 +48,15 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
                 untrackableState = UntrackableState(hands = playerHands,
                         board = initialBoardState))
     }
+
+    // exposed for ComputeDeckBoundaries
+    fun createDeckForPlayerHands(rng: Random): Deck<PlayerCard> {
+        val cityPlayerCards = cities.map { CityPlayerCard(it) }.toSet()
+        val events = chooseDistinct(availableEvents, numEventsToUse, rng)
+
+        var deckForPlayerHands = Deck(cityPlayerCards.union(events).toList()).shuffled(rng)
+        return deckForPlayerHands
+    }
 }
 
 val NATIONAL_CHAMPIONSHIP_RULES = RuleSet(numPlayers = 2,
@@ -68,17 +74,3 @@ fun <T> chooseDistinct(items: Collection<T>, numItemsToChoose: Int, rng: Random)
     return items.shuffled(rng).subList(0, numItemsToChoose).toSet()
 }
 
-// from https://stackoverflow.com/questions/34498368/kotlin-convert-large-list-to-sublist-of-set-partition-size
-public fun <T> Sequence<T>.batch(n: Int): Sequence<List<T>> {
-    return BatchingSequence(this, n)
-}
-
-private class BatchingSequence<T>(val source: Sequence<T>, val batchSize: Int) : Sequence<List<T>> {
-    override fun iterator(): Iterator<List<T>> = object : AbstractIterator<List<T>>() {
-        val iterate = if (batchSize > 0) source.iterator() else emptyList<T>().iterator()
-        override fun computeNext() {
-            if (iterate.hasNext()) setNext(iterate.asSequence().take(batchSize).toList())
-            else done()
-        }
-    }
-}

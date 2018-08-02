@@ -59,6 +59,20 @@ data class Deck<CardType : Card>(val cards: List<CardType>) : Serializable {
     fun placeOnTopOf(otherDeck: Deck<CardType>): Deck<CardType> {
         return Deck(cards.plus(otherDeck.cards).toList())
     }
+
+    fun splitAsEvenlyAsPossible(numStacks: Int): List<List<CardType>> {
+        require(numStacks > 0 && numStacks < this.cards.size)
+        return cards.asSequence()
+                // count out cards into epidemic stacks
+                // first card to stack 1, second to stack 2, and so on, returning to stack 1
+                // when we run out of stacks
+                .withIndex()
+                .groupBy { it.index % numStacks }
+                // undoes withIndex
+                .mapValues { it.value.map { it.value }.toList() }
+                .values
+                .toList()
+    }
 }
 
 val CHAMPIONSHIP_VIRULENT_STRAIN_EPIDEMICS = setOf("Chronic Effect", "Unacceptable Loss",
