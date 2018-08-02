@@ -1,6 +1,7 @@
 package gabbard.org.pandemicgenerator
 
 import android.content.Intent
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Bundle
 import android.os.SystemClock
@@ -31,14 +32,20 @@ class TurnTimer : AppCompatActivity() {
         val targetTime = SystemClock.elapsedRealtime() + 75 * 1000
         timeRemaining.base = targetTime
         timeRemaining.onChronometerTickListener = Chronometer.OnChronometerTickListener {
-            if (SystemClock.elapsedRealtime() >= targetTime) {
+            val timeTilTarget = targetTime - SystemClock.elapsedRealtime()
+            if (timeTilTarget <= 0) {
                 try {
                     val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                     val r = RingtoneManager.getRingtone(applicationContext, notification)
                     r.play()
+                    timeRemaining.stop()
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            } else if (timeTilTarget <= 10 * 1000) {
+                window.decorView.setBackgroundColor(Color.RED)
+            } else if (timeTilTarget <= 30 * 1000) {
+                window.decorView.setBackgroundColor(Color.YELLOW)
             }
         }
     }
