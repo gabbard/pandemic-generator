@@ -23,7 +23,6 @@ data class RuleSet(val numPlayers: Int, val availableRoles: Set<Role>,
         val playerHands = deckItems.toMap()
 
         val epidemics = chooseDistinct(availableEpidemics, numEpidemicsToUse, rng).toList()
-
         val playerDeck = Deck(
                 deckForPlayerHands.splitAsEvenlyAsPossible(epidemics.size)
                         // add an epidemic to each stack and shuffle it
