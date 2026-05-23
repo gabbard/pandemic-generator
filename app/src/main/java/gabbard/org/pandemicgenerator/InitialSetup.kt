@@ -2,15 +2,16 @@ package gabbard.org.pandemicgenerator
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.activity_initial_setup.*
+import androidx.appcompat.app.AppCompatActivity
+import gabbard.org.pandemicgenerator.databinding.ActivityInitialSetupBinding
 import org.gabbard.pandemicgenerator.NATIONAL_CHAMPIONSHIP_RULES
 import org.gabbard.pandemicgenerator.TrackableState
 import java.util.*
 
 
 class InitialSetup : AppCompatActivity() {
+    private lateinit var binding: ActivityInitialSetupBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
 
@@ -20,7 +21,8 @@ class InitialSetup : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_initial_setup)
+        binding = ActivityInitialSetupBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
 
         val fullGameState = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng!!)
@@ -31,11 +33,9 @@ class InitialSetup : AppCompatActivity() {
             throw RuntimeException("Only two players currently supported. Issue #10")
         }
         val hands = fullGameState.untrackableState.hands
-        player1.text = players[0].role.name + ": " +
-                hands[players[0]]
-        player2.text = players[1].role.name + ": " +
-                hands[players[1]]
-        board.text = fullGameState.untrackableState.board.cityStates.toString()
+        binding.player1.text = players[0].role.name + ": " + hands[players[0]]
+        binding.player2.text = players[1].role.name + ": " + hands[players[1]]
+        binding.board.text = fullGameState.untrackableState.board.cityStates.toString()
     }
 
     fun readyToPlay(view: View) {

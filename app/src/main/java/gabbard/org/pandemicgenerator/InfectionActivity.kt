@@ -2,15 +2,16 @@ package gabbard.org.pandemicgenerator
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.activity_infection.*
+import androidx.appcompat.app.AppCompatActivity
+import gabbard.org.pandemicgenerator.databinding.ActivityInfectionBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import org.gabbard.pandemicgenerator.messageForTransitionResult
 import java.util.*
 
 class InfectionActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityInfectionBinding
     var gameState: TrackableState? = null
     var rng: Random? = null
 
@@ -21,12 +22,13 @@ class InfectionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_infection)
+        binding = ActivityInfectionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         gameState = intent.getSerializableExtra(InfectionActivity.GAME_STATE) as TrackableState
         rng = intent.getSerializableExtra(InfectionActivity.RANDOM_SOURCE) as Random
 
         val infectionResult = gameState!!.executeTransition(Transition.INFECT, rng!!)
-        infectionResultMessage.text = messageForTransitionResult(infectionResult)
+        binding.infectionResultMessage.text = messageForTransitionResult(infectionResult)
         gameState = infectionResult.newGameState
     }
 
@@ -34,7 +36,6 @@ class InfectionActivity : AppCompatActivity() {
         val turnTimerIntent = Intent(this, TurnTimer::class.java)
         turnTimerIntent.putExtra(TurnTimer.GAME_STATE, gameState!!)
         turnTimerIntent.putExtra(TurnTimer.RANDOM_SOURCE, rng!!)
-
         startActivity(turnTimerIntent)
     }
 }
