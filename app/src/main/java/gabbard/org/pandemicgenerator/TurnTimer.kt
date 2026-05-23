@@ -27,7 +27,9 @@ class TurnTimer : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityTurnTimerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        @Suppress("DEPRECATION")
         gameState = intent.getSerializableExtra(GAME_STATE) as TrackableState
+        @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
         binding.timeRemaining.isCountDown = true
         binding.timeRemaining.start()

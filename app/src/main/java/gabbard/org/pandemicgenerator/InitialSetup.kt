@@ -23,6 +23,7 @@ class InitialSetup : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityInitialSetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
 
         val fullGameState = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng!!)

@@ -24,7 +24,9 @@ class InfectionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityInfectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        @Suppress("DEPRECATION")
         gameState = intent.getSerializableExtra(InfectionActivity.GAME_STATE) as TrackableState
+        @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(InfectionActivity.RANDOM_SOURCE) as Random
 
         val infectionResult = gameState!!.executeTransition(Transition.INFECT, rng!!)

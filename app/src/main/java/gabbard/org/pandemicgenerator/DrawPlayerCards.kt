@@ -24,7 +24,9 @@ class DrawPlayerCards : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDrawPlayerCardsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        @Suppress("DEPRECATION")
         gameState = intent.getSerializableExtra(DrawPlayerCards.GAME_STATE) as TrackableState
+        @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(DrawPlayerCards.RANDOM_SOURCE) as Random
         val drawResult = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
 

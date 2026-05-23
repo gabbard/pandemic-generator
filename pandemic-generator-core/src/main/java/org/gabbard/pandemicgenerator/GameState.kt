@@ -120,7 +120,7 @@ data class TrackableState(val curPlayer: Int,
     private data class EpidemicExecutionResult(val newCity: City, val newGameState: TrackableState)
 
     private fun executeEpidemic(rng: Random): EpidemicExecutionResult {
-        val newInfectionRate = InfectionRate.values()[infectionRate.ordinal + 1]
+        val newInfectionRate = InfectionRate.entries[infectionRate.ordinal + 1]
         val (infectionCardOffTheBottom, infectionDeckAfterNewCity) = infectionDeck.drawOneFromTheBottom()
         val newInfectionDeck = Deck(infectionDiscardPile.toList().plus(infectionCardOffTheBottom))
                 .shuffled(rng).placeOnTopOf(infectionDeckAfterNewCity)
