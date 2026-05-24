@@ -22,6 +22,8 @@ class TurnTimer : GameActivity() {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
         const val SEED = "seed"
+        const val TURN_DURATION = "turn_duration"
+        const val NO_TIMER = -1
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,27 +40,30 @@ class TurnTimer : GameActivity() {
 
         GameRepository.save(this, GameRepository.GameSession(gameState!!, rng!!, seed))
 
-        val turnDurationSeconds = getSharedPreferences(GameOptionsActivity.PREFS_NAME, MODE_PRIVATE)
-            .getInt(GameOptionsActivity.PREF_TURN_DURATION, GameOptionsActivity.DEFAULT_TURN_DURATION)
-        binding.timeRemaining.isCountDown = true
-        binding.timeRemaining.start()
-        val targetTime = SystemClock.elapsedRealtime() + turnDurationSeconds * 1000L
-        binding.timeRemaining.base = targetTime
-        binding.timeRemaining.onChronometerTickListener = Chronometer.OnChronometerTickListener {
-            val timeTilTarget = targetTime - SystemClock.elapsedRealtime()
-            if (timeTilTarget <= 0) {
-                try {
-                    val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                    val r = RingtoneManager.getRingtone(applicationContext, notification)
-                    r.play()
-                    binding.timeRemaining.stop()
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        val turnDurationSeconds = intent.getIntExtra(TURN_DURATION, NO_TIMER)
+        if (turnDurationSeconds == NO_TIMER) {
+            binding.timeRemaining.visibility = View.GONE
+        } else {
+            binding.timeRemaining.isCountDown = true
+            binding.timeRemaining.start()
+            val targetTime = SystemClock.elapsedRealtime() + turnDurationSeconds * 1000L
+            binding.timeRemaining.base = targetTime
+            binding.timeRemaining.onChronometerTickListener = Chronometer.OnChronometerTickListener {
+                val timeTilTarget = targetTime - SystemClock.elapsedRealtime()
+                if (timeTilTarget <= 0) {
+                    try {
+                        val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        val r = RingtoneManager.getRingtone(applicationContext, notification)
+                        r.play()
+                        binding.timeRemaining.stop()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else if (timeTilTarget <= 10 * 1000) {
+                    window.decorView.setBackgroundColor(Color.RED)
+                } else if (timeTilTarget <= 30 * 1000) {
+                    window.decorView.setBackgroundColor(Color.YELLOW)
                 }
-            } else if (timeTilTarget <= 10 * 1000) {
-                window.decorView.setBackgroundColor(Color.RED)
-            } else if (timeTilTarget <= 30 * 1000) {
-                window.decorView.setBackgroundColor(Color.YELLOW)
             }
         }
     }
@@ -68,6 +73,7 @@ class TurnTimer : GameActivity() {
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.GAME_STATE, gameState!!)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.RANDOM_SOURCE, rng!!)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.SEED, seed)
+        drawPlayerCardsIntent.putExtra(DrawPlayerCards.TURN_DURATION, intent.getIntExtra(TURN_DURATION, NO_TIMER))
         startActivity(drawPlayerCardsIntent)
     }
 }

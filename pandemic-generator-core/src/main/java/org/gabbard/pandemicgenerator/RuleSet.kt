@@ -14,7 +14,8 @@ data class RuleSet(
     val numEventsToUse: Int,
     val availableDifficulties: List<Difficulty>,
     val allowedPlayerCounts: List<Int>,
-    val cities: Set<City> = ALL_CITIES
+    val cities: Set<City> = ALL_CITIES,
+    val turnDurationSeconds: Int? = null
 ) : Serializable {
 
     fun buildGameRules(options: GameOptions): GameRules {
@@ -31,7 +32,8 @@ data class RuleSet(
             availableEvents = availableEvents,
             availableEpidemics = availableEpidemics,
             numEpidemicsToUse = options.difficulty.numEpidemics,
-            numEventsToUse = numEventsToUse
+            numEventsToUse = numEventsToUse,
+            turnDurationSeconds = turnDurationSeconds
         )
     }
 }
@@ -45,7 +47,8 @@ val NATIONAL_CHAMPIONSHIP = RuleSet(
     availableEvents = COMPETITIVE_PLAY_EVENTS,
     numEventsToUse = 5,
     availableDifficulties = listOf(NATIONAL_CHAMPIONSHIP_DIFFICULTY),
-    allowedPlayerCounts = listOf(2)
+    allowedPlayerCounts = listOf(2),
+    turnDurationSeconds = 75
 )
 
 val STANDARD_PANDEMIC = RuleSet(
