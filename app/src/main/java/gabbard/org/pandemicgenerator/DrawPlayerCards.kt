@@ -3,13 +3,12 @@ package gabbard.org.pandemicgenerator
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityDrawPlayerCardsBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import java.util.*
 
-class DrawPlayerCards : AppCompatActivity() {
+class DrawPlayerCards : GameActivity() {
     private lateinit var binding: ActivityDrawPlayerCardsBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null

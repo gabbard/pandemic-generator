@@ -3,13 +3,12 @@ package gabbard.org.pandemicgenerator
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityInfectionBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import java.util.*
 
-class InfectionActivity : AppCompatActivity() {
+class InfectionActivity : GameActivity() {
     private lateinit var binding: ActivityInfectionBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
