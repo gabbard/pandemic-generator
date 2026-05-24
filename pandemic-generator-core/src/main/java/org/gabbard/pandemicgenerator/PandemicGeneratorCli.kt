@@ -16,9 +16,9 @@ val transitionToCommand = mapOf(Transition.INFECT to "i", Transition.DRAW_PLAYER
 
 fun messageForTransitionResult(result: TrackableState.TransitionResult): String {
     return when (result) {
-        is TrackableState.TransitionResult.InfectionTransitionResult ->
+        is TrackableState.TransitionResult.Success.InfectionTransitionResult ->
             "The following cities were infected: ${result.infectedCities}"
-        is TrackableState.TransitionResult.DrawPlayerCardsTransitionResult -> {
+        is TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult -> {
             val msg = StringBuilder()
             msg.append("Drew: ${result.cardsDrawn}\n\n")
             for ((epidemic, infectedCity) in result.epidemicsAndInfectedCities) {
@@ -26,6 +26,8 @@ fun messageForTransitionResult(result: TrackableState.TransitionResult): String 
             }
             msg.toString()
         }
+        is TrackableState.TransitionResult.PlayerDeckExhausted ->
+            "GAME OVER: The player deck ran out of cards. You lost!"
     }
 }
 fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
@@ -82,8 +84,11 @@ fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
             val transition = commandToTransition[command]
             if (transition != null) {
                 val transitionResult = curState.executeTransition(transition, rng)
-                history.push(transitionResult.newGameState)
                 print("${messageForTransitionResult(transitionResult)}\n")
+                if (transitionResult is TrackableState.TransitionResult.PlayerDeckExhausted) {
+                    break
+                }
+                history.push((transitionResult as TrackableState.TransitionResult.Success).newGameState)
             }
         }
     }

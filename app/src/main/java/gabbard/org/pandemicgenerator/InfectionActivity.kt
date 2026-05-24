@@ -33,7 +33,7 @@ class InfectionActivity : GameActivity() {
         binding.seedDisplay.text = "Seed: $seed"
 
         val result = gameState!!.executeTransition(Transition.INFECT, rng!!)
-                as TrackableState.TransitionResult.InfectionTransitionResult
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
         gameState = result.newGameState
 
         binding.infectedCities.addSectionHeader("Cities infected this turn:")

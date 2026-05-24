@@ -32,17 +32,24 @@ class DrawPlayerCards : GameActivity() {
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
 
-        val result = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
-        gameState = result.newGameState
+        when (val result = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)) {
+            is TrackableState.TransitionResult.PlayerDeckExhausted -> {
+                startActivity(Intent(this, GameOverActivity::class.java))
+                return
+            }
+            is TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult -> {
+                gameState = result.newGameState
 
-        val container = binding.cardsContainer
-        container.addSectionHeader("Cards drawn:")
-        result.cardsDrawn.forEach { container.addPlayerCardRow(it) }
+                val container = binding.cardsContainer
+                container.addSectionHeader("Cards drawn:")
+                result.cardsDrawn.forEach { container.addPlayerCardRow(it) }
 
-        for ((epidemic, city) in result.epidemicsAndInfectedCities) {
-            container.addSectionHeader("Epidemic: ${epidemic.userString}")
-            container.addCityRow(city, "infected from bottom")
+                for ((epidemic, city) in result.epidemicsAndInfectedCities) {
+                    container.addSectionHeader("Epidemic: ${epidemic.userString}")
+                    container.addCityRow(city, "infected from bottom")
+                }
+            }
+            else -> error("Unexpected result type for DRAW_PLAYER_CARDS: $result")
         }
     }
 
