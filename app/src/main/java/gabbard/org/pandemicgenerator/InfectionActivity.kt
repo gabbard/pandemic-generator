@@ -34,7 +34,7 @@ class InfectionActivity : AppCompatActivity() {
         gameState = infectionResult.newGameState
     }
 
-    fun onNextTurn(view: View) {
+    fun onNextTurn(@Suppress("UNUSED_PARAMETER") view: View) {
         val turnTimerIntent = Intent(this, TurnTimer::class.java)
         turnTimerIntent.putExtra(TurnTimer.GAME_STATE, gameState!!)
         turnTimerIntent.putExtra(TurnTimer.RANDOM_SOURCE, rng!!)

@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
-    fun startGame(view: View) {
+    fun startGame(@Suppress("UNUSED_PARAMETER") view: View) {
         val startGameIntent = Intent(this, EnterRandomSeed::class.java)
         startActivity(startGameIntent)
     }

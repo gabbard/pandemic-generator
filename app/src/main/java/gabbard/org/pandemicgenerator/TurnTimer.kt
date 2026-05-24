@@ -54,7 +54,7 @@ class TurnTimer : AppCompatActivity() {
         }
     }
 
-    fun onDrawPlayerCards(view: View) {
+    fun onDrawPlayerCards(@Suppress("UNUSED_PARAMETER") view: View) {
         val drawPlayerCardsIntent = Intent(this, DrawPlayerCards::class.java)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.GAME_STATE, gameState!!)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.RANDOM_SOURCE, rng!!)

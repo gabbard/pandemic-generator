@@ -34,7 +34,7 @@ class DrawPlayerCards : AppCompatActivity() {
         binding.drawResultMessage.text = messageForTransitionResult(drawResult)
     }
 
-    fun onProceedToInfectionPhase(view: View) {
+    fun onProceedToInfectionPhase(@Suppress("UNUSED_PARAMETER") view: View) {
         val infetionIntent = Intent(this, InfectionActivity::class.java)
         infetionIntent.putExtra(InfectionActivity.GAME_STATE, gameState!!)
         infetionIntent.putExtra(InfectionActivity.RANDOM_SOURCE, rng!!)

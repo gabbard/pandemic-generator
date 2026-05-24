@@ -16,7 +16,7 @@ class EnterRandomSeed : AppCompatActivity() {
         setContentView(binding.root)
     }
 
-    fun startGame(view: View) {
+    fun startGame(@Suppress("UNUSED_PARAMETER") view: View) {
         val rng = Random(binding.startGame.text.toString().toLong())
 
         val startGameIntent = Intent(this, InitialSetup::class.java)

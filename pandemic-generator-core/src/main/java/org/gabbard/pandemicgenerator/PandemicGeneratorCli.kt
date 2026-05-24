@@ -28,7 +28,7 @@ fun messageForTransitionResult(result: TrackableState.TransitionResult): String 
         }
     }
 }
-fun main(args: Array<String>) {
+fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
     print("Enter random seed: ")
     val rng = Random(readLine()!!.toLong())
     val initialState = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng)
