@@ -18,6 +18,7 @@ class InfectionActivity : GameActivity() {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
         const val SEED = "seed"
+        const val TURN_DURATION = "turn_duration"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +45,7 @@ class InfectionActivity : GameActivity() {
         turnTimerIntent.putExtra(TurnTimer.GAME_STATE, gameState!!)
         turnTimerIntent.putExtra(TurnTimer.RANDOM_SOURCE, rng!!)
         turnTimerIntent.putExtra(TurnTimer.SEED, seed)
+        turnTimerIntent.putExtra(TurnTimer.TURN_DURATION, intent.getIntExtra(TURN_DURATION, TurnTimer.NO_TIMER))
         startActivity(turnTimerIntent)
     }
 }

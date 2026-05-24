@@ -10,7 +10,8 @@ data class GameRules(
     val availableEvents: Set<EventCard>,
     val availableEpidemics: Set<Epidemic>,
     val numEpidemicsToUse: Int,
-    val numEventsToUse: Int
+    val numEventsToUse: Int,
+    val turnDurationSeconds: Int? = null
 ) : Serializable {
 
     fun setupGame(rng: Random): GameState {

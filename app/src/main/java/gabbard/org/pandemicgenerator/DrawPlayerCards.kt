@@ -18,6 +18,7 @@ class DrawPlayerCards : GameActivity() {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
         const val SEED = "seed"
+        const val TURN_DURATION = "turn_duration"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +51,7 @@ class DrawPlayerCards : GameActivity() {
         infectionIntent.putExtra(InfectionActivity.GAME_STATE, gameState!!)
         infectionIntent.putExtra(InfectionActivity.RANDOM_SOURCE, rng!!)
         infectionIntent.putExtra(InfectionActivity.SEED, seed)
+        infectionIntent.putExtra(InfectionActivity.TURN_DURATION, intent.getIntExtra(TURN_DURATION, TurnTimer.NO_TIMER))
         startActivity(infectionIntent)
     }
 }
