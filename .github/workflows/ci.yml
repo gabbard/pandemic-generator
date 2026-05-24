@@ -8,8 +8,10 @@ on:
 
 jobs:
   test:
-    name: Core unit tests
+    name: Unit tests & coverage
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -26,8 +28,18 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle', 'gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-
 
-      - name: Run core tests
-        run: ./gradlew :pandemic-generator-core:test
+      - name: Run all unit tests and generate coverage reports
+        run: ./gradlew :pandemic-generator-core:test :pandemic-generator-core:jacocoTestReport :app:jacocoTestReport
+
+      - name: Post coverage report on PR
+        if: github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: |
+            ${{ github.workspace }}/pandemic-generator-core/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Test Coverage
 
   build:
     name: Android build
