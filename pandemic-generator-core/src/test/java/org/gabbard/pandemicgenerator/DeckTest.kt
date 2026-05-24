@@ -16,6 +16,21 @@ class DeckTest {
     }
 
     @Test
+    fun drawReturnedListIsIndependentlySerializable() {
+        // Regression: Deck.draw() previously returned cards.subList(0, n), an
+        // ArrayList$SubList that is not Serializable. Verify the fix holds.
+        val (drawn, _) = deck("A", "B", "C").draw(2)
+        val baos = java.io.ByteArrayOutputStream()
+        java.io.ObjectOutputStream(baos).use { it.writeObject(drawn) }
+        assertTrue("drawn list must be serializable as a standalone list", baos.size() > 0)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun drawThrowsWhenRequestingMoreCardsThanAvailable() {
+        deck("A", "B").draw(3)
+    }
+
+    @Test
     fun drawEntireDeck() {
         val (drawn, remaining) = deck("A", "B").draw(2)
         assertEquals(2, drawn.size)
@@ -27,6 +42,11 @@ class DeckTest {
         val (card, remaining) = deck("A", "B", "C").drawOneFromTheBottom()
         assertEquals("C", card.city.name)
         assertEquals(listOf("A", "B"), remaining.cards.map { it.city.name })
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun drawOneFromBottomThrowsOnEmptyDeck() {
+        Deck<InfectionCard>(emptyList()).drawOneFromTheBottom()
     }
 
     @Test
@@ -53,6 +73,11 @@ class DeckTest {
         assertEquals(listOf("A", "D"), stacks[0].map { it.city.name })
         assertEquals(listOf("B", "E"), stacks[1].map { it.city.name })
         assertEquals(listOf("C", "F"), stacks[2].map { it.city.name })
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun splitRequiresFewerStacksThanCards() {
+        deck("A", "B", "C").splitAsEvenlyAsPossible(3)
     }
 
     @Test
