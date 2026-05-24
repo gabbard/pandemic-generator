@@ -39,7 +39,7 @@ class TurnTimer : AppCompatActivity() {
             val timeTilTarget = targetTime - SystemClock.elapsedRealtime()
             if (timeTilTarget <= 0) {
                 try {
-                    val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                    val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
                     val r = RingtoneManager.getRingtone(applicationContext, notification)
                     r.play()
                     binding.timeRemaining.stop()
