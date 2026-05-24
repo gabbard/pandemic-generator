@@ -12,12 +12,14 @@ import java.util.*
 
 class InfectionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityInfectionBinding
-    var gameState: TrackableState? = null
-    var rng: Random? = null
+    private var gameState: TrackableState? = null
+    private var rng: Random? = null
+    private var seed: Long = 0
 
     companion object {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
+        const val SEED = "seed"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +30,8 @@ class InfectionActivity : AppCompatActivity() {
         gameState = intent.getSerializableExtra(InfectionActivity.GAME_STATE) as TrackableState
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(InfectionActivity.RANDOM_SOURCE) as Random
+        seed = intent.getLongExtra(SEED, 0)
+        binding.seedDisplay.text = "Seed: $seed"
 
         val infectionResult = gameState!!.executeTransition(Transition.INFECT, rng!!)
         binding.infectionResultMessage.text = messageForTransitionResult(infectionResult)
@@ -38,6 +42,7 @@ class InfectionActivity : AppCompatActivity() {
         val turnTimerIntent = Intent(this, TurnTimer::class.java)
         turnTimerIntent.putExtra(TurnTimer.GAME_STATE, gameState!!)
         turnTimerIntent.putExtra(TurnTimer.RANDOM_SOURCE, rng!!)
+        turnTimerIntent.putExtra(TurnTimer.SEED, seed)
         startActivity(turnTimerIntent)
     }
 }

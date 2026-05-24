@@ -17,10 +17,12 @@ class TurnTimer : AppCompatActivity() {
     private lateinit var binding: ActivityTurnTimerBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
+    private var seed: Long = 0
 
     companion object {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
+        const val SEED = "seed"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +33,9 @@ class TurnTimer : AppCompatActivity() {
         gameState = intent.getSerializableExtra(GAME_STATE) as TrackableState
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
+        seed = intent.getLongExtra(SEED, 0)
+        binding.seedDisplay.text = "Seed: $seed"
+
         binding.timeRemaining.isCountDown = true
         binding.timeRemaining.start()
         val targetTime = SystemClock.elapsedRealtime() + 75 * 1000
@@ -58,6 +63,7 @@ class TurnTimer : AppCompatActivity() {
         val drawPlayerCardsIntent = Intent(this, DrawPlayerCards::class.java)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.GAME_STATE, gameState!!)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.RANDOM_SOURCE, rng!!)
+        drawPlayerCardsIntent.putExtra(DrawPlayerCards.SEED, seed)
         startActivity(drawPlayerCardsIntent)
     }
 }
