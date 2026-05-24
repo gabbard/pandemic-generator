@@ -38,9 +38,11 @@ class TurnTimer : GameActivity() {
 
         GameRepository.save(this, GameRepository.GameSession(gameState!!, rng!!, seed))
 
+        val turnDurationSeconds = getSharedPreferences(GameOptionsActivity.PREFS_NAME, MODE_PRIVATE)
+            .getInt(GameOptionsActivity.PREF_TURN_DURATION, GameOptionsActivity.DEFAULT_TURN_DURATION)
         binding.timeRemaining.isCountDown = true
         binding.timeRemaining.start()
-        val targetTime = SystemClock.elapsedRealtime() + 75 * 1000
+        val targetTime = SystemClock.elapsedRealtime() + turnDurationSeconds * 1000L
         binding.timeRemaining.base = targetTime
         binding.timeRemaining.onChronometerTickListener = Chronometer.OnChronometerTickListener {
             val timeTilTarget = targetTime - SystemClock.elapsedRealtime()
