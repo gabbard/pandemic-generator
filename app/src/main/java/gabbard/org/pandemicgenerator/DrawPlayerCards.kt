@@ -2,15 +2,16 @@ package gabbard.org.pandemicgenerator
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.activity_draw_player_cards.*
+import androidx.appcompat.app.AppCompatActivity
+import gabbard.org.pandemicgenerator.databinding.ActivityDrawPlayerCardsBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import org.gabbard.pandemicgenerator.messageForTransitionResult
 import java.util.*
 
 class DrawPlayerCards : AppCompatActivity() {
+    private lateinit var binding: ActivityDrawPlayerCardsBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
 
@@ -21,20 +22,22 @@ class DrawPlayerCards : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_draw_player_cards)
+        binding = ActivityDrawPlayerCardsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        @Suppress("DEPRECATION")
         gameState = intent.getSerializableExtra(DrawPlayerCards.GAME_STATE) as TrackableState
+        @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(DrawPlayerCards.RANDOM_SOURCE) as Random
         val drawResult = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
 
         gameState = drawResult.newGameState
-        drawResultMessage.text = messageForTransitionResult(drawResult)
+        binding.drawResultMessage.text = messageForTransitionResult(drawResult)
     }
 
-    fun onProceedToInfectionPhase(view: View) {
+    fun onProceedToInfectionPhase(@Suppress("UNUSED_PARAMETER") view: View) {
         val infetionIntent = Intent(this, InfectionActivity::class.java)
         infetionIntent.putExtra(InfectionActivity.GAME_STATE, gameState!!)
         infetionIntent.putExtra(InfectionActivity.RANDOM_SOURCE, rng!!)
-
         startActivity(infetionIntent)
     }
 }

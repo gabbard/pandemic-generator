@@ -2,20 +2,22 @@ package gabbard.org.pandemicgenerator
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.activity_enter_random_seed.*
+import androidx.appcompat.app.AppCompatActivity
+import gabbard.org.pandemicgenerator.databinding.ActivityEnterRandomSeedBinding
 import java.util.*
 
 class EnterRandomSeed : AppCompatActivity() {
+    private lateinit var binding: ActivityEnterRandomSeedBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_enter_random_seed)
+        binding = ActivityEnterRandomSeedBinding.inflate(layoutInflater)
+        setContentView(binding.root)
     }
 
-    fun startGame(view: View) {
-        val rng = Random(startGame.text.toString().toLong())
+    fun startGame(@Suppress("UNUSED_PARAMETER") view: View) {
+        val rng = Random(binding.startGame.text.toString().toLong())
 
         val startGameIntent = Intent(this, InitialSetup::class.java)
         startGameIntent.putExtra(InitialSetup.RANDOM_SOURCE, rng)

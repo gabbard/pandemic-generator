@@ -7,7 +7,7 @@ import java.util.*
 const val NUM_CARDS_FOR_PLAYER_HANDS = 2 * 4
 
 
-fun main(args: Array<String>) {
+fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
     val numSamples = 10000
     val rng = Random(0)
 
