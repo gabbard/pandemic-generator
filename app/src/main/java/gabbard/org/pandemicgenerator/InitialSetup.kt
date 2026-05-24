@@ -40,7 +40,16 @@ class InitialSetup : AppCompatActivity() {
         val hands = fullGameState.untrackableState.hands
         binding.player1.text = players[0].role.name + ": " + hands[players[0]]
         binding.player2.text = players[1].role.name + ": " + hands[players[1]]
-        binding.board.text = fullGameState.untrackableState.board.cityStates.toString()
+
+        val boardCities = binding.boardCities
+        val cityStates = fullGameState.untrackableState.board.cityStates
+        for (cubes in 3 downTo 1) {
+            val cities = cityStates.filterValues { it.infections.values.sum() == cubes }.keys
+            if (cities.isNotEmpty()) {
+                boardCities.addSectionHeader("$cubes cube${if (cubes == 1) "" else "s"}:")
+                cities.sortedBy { it.name }.forEach { boardCities.addCityRow(it) }
+            }
+        }
     }
 
     fun readyToPlay(@Suppress("UNUSED_PARAMETER") view: View) {

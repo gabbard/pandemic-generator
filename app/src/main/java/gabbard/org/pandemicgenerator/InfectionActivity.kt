@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityInfectionBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
-import org.gabbard.pandemicgenerator.messageForTransitionResult
 import java.util.*
 
 class InfectionActivity : AppCompatActivity() {
@@ -33,9 +32,12 @@ class InfectionActivity : AppCompatActivity() {
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
 
-        val infectionResult = gameState!!.executeTransition(Transition.INFECT, rng!!)
-        binding.infectionResultMessage.text = messageForTransitionResult(infectionResult)
-        gameState = infectionResult.newGameState
+        val result = gameState!!.executeTransition(Transition.INFECT, rng!!)
+                as TrackableState.TransitionResult.InfectionTransitionResult
+        gameState = result.newGameState
+
+        binding.infectedCities.addSectionHeader("Cities infected this turn:")
+        result.infectedCities.forEach { binding.infectedCities.addCityRow(it) }
     }
 
     fun onNextTurn(@Suppress("UNUSED_PARAMETER") view: View) {
