@@ -53,6 +53,9 @@ class DrawPlayerCards : GameActivity() {
         }
     }
 
+    override fun gameStateForLog() = gameState
+    override fun seedForLog() = seed
+
     fun onProceedToInfectionPhase(@Suppress("UNUSED_PARAMETER") view: View) {
         val infectionIntent = Intent(this, InfectionActivity::class.java)
         infectionIntent.putExtra(InfectionActivity.GAME_STATE, gameState!!)

@@ -31,16 +31,6 @@ fun messageForTransitionResult(result: TrackableState.TransitionResult): String 
     }
 }
 
-fun messageForGameEvent(event: GameEvent): String = when (event) {
-    is GameEvent.InfectionEvent -> "Infected cities: ${event.infectedCities}"
-    is GameEvent.DrawPlayerCardsEvent -> {
-        val msg = StringBuilder("Drew: ${event.cardsDrawn}")
-        for ((epidemic, infectedCity) in event.epidemicsAndInfectedCities) {
-            msg.append("; $epidemic infects $infectedCity")
-        }
-        msg.toString()
-    }
-}
 fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
     print("Enter random seed: ")
     val rng = Random(readLine()!!.toLong())
@@ -71,16 +61,7 @@ fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
         history.addAll(savedHistory)
     }
 
-    fun showLog() {
-        val log = history.peek().eventLog
-        if (log.isEmpty()) {
-            print("No events yet.\n")
-        } else {
-            log.forEachIndexed { i, event -> print("${i + 1}. ${messageForGameEvent(event)}\n") }
-        }
-    }
-
-    val specialCommands = mapOf("s" to ::save, "l" to ::load, "g" to ::showLog)
+    val specialCommands = mapOf("s" to ::save, "l" to ::load)
 
     history.push(initialState.trackableState)
     transitionToCommand

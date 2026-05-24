@@ -24,6 +24,7 @@
         <activity android:name=".DrawPlayerCards" />
         <activity android:name=".InfectionActivity" />
         <activity android:name=".GameOverActivity" />
+        <activity android:name=".GameLogActivity" />
     </application>
 
 </manifest>

@@ -68,6 +68,9 @@ class TurnTimer : GameActivity() {
         }
     }
 
+    override fun gameStateForLog() = gameState
+    override fun seedForLog() = seed
+
     fun onDrawPlayerCards(@Suppress("UNUSED_PARAMETER") view: View) {
         val drawPlayerCardsIntent = Intent(this, DrawPlayerCards::class.java)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.GAME_STATE, gameState!!)
