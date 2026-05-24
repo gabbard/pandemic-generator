@@ -102,6 +102,82 @@ class RuleSetTest {
         )
     }
 
+    // ── buildGameRules validation ─────────────────────────────────────────────
+
+    @Test(expected = IllegalArgumentException::class)
+    fun buildGameRulesRejectsPlayerCountNotInAllowedList() {
+        NATIONAL_CHAMPIONSHIP.buildGameRules(
+            GameOptions(numPlayers = 3, difficulty = NATIONAL_CHAMPIONSHIP_DIFFICULTY)
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun buildGameRulesRejectsDifficultyNotInAvailableList() {
+        NATIONAL_CHAMPIONSHIP.buildGameRules(
+            GameOptions(numPlayers = 2, difficulty = Difficulty("Unknown", 4))
+        )
+    }
+
+    // ── NATIONAL_CHAMPIONSHIP configuration ───────────────────────────────────
+
+    @Test
+    fun nationalChampionshipAllowsOnlyTwoPlayers() {
+        assertEquals(listOf(2), NATIONAL_CHAMPIONSHIP.allowedPlayerCounts)
+    }
+
+    @Test
+    fun nationalChampionshipTurnDurationIs75Seconds() {
+        assertEquals(75, NATIONAL_CHAMPIONSHIP.turnDurationSeconds)
+    }
+
+    @Test
+    fun nationalChampionshipRulesPropagateTurnDuration() {
+        assertEquals(75, NATIONAL_CHAMPIONSHIP_RULES.turnDurationSeconds)
+    }
+
+    @Test
+    fun nationalChampionshipHasExactlySixAvailableEpidemics() {
+        assertEquals(6, NATIONAL_CHAMPIONSHIP.availableEpidemics.size)
+    }
+
+    // ── STANDARD_PANDEMIC configuration ──────────────────────────────────────
+
+    @Test
+    fun standardPandemicHasNoTimer() {
+        assertNull(STANDARD_PANDEMIC.turnDurationSeconds)
+    }
+
+    @Test
+    fun standardPandemicAllows2To4Players() {
+        assertEquals(listOf(2, 3, 4), STANDARD_PANDEMIC.allowedPlayerCounts)
+    }
+
+    @Test
+    fun standardPandemicIntroductoryHasFourEpidemics() {
+        val rules = STANDARD_PANDEMIC.buildGameRules(GameOptions(2, Difficulty("Introductory", 4)))
+        assertEquals(4, rules.numEpidemicsToUse)
+    }
+
+    @Test
+    fun standardPandemicNormalHasFiveEpidemics() {
+        val rules = STANDARD_PANDEMIC.buildGameRules(GameOptions(2, Difficulty("Normal", 5)))
+        assertEquals(5, rules.numEpidemicsToUse)
+    }
+
+    @Test
+    fun standardPandemicHeroicHasSixEpidemics() {
+        val rules = STANDARD_PANDEMIC.buildGameRules(GameOptions(2, Difficulty("Heroic", 6)))
+        assertEquals(6, rules.numEpidemicsToUse)
+    }
+
+    // ── BUILT_IN_RULE_SETS ────────────────────────────────────────────────────
+
+    @Test
+    fun builtInRuleSetsContainsBothVariants() {
+        assertTrue(BUILT_IN_RULE_SETS.contains(STANDARD_PANDEMIC))
+        assertTrue(BUILT_IN_RULE_SETS.contains(NATIONAL_CHAMPIONSHIP))
+    }
+
     // ── chooseDistinct ────────────────────────────────────────────────────────
 
     @Test
