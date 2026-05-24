@@ -38,8 +38,11 @@ class InitialSetup : AppCompatActivity() {
             throw RuntimeException("Only two players currently supported. Issue #10")
         }
         val hands = fullGameState.untrackableState.hands
-        binding.player1.text = players[0].role.name + ": " + hands[players[0]]
-        binding.player2.text = players[1].role.name + ": " + hands[players[1]]
+        listOf(binding.player1Cards to players[0], binding.player2Cards to players[1])
+            .forEach { (container, player) ->
+                container.addSectionHeader(player.role.name)
+                hands[player]!!.sortedBy { it.userString }.forEach { container.addPlayerCardRow(it) }
+            }
 
         val boardCities = binding.boardCities
         val cityStates = fullGameState.untrackableState.board.cityStates
