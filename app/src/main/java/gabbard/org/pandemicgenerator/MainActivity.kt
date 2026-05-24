@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.newGame.setOnClickListener {
-            startActivity(Intent(this, EnterRandomSeed::class.java))
+            startActivity(Intent(this, RuleSetSelectionActivity::class.java))
         }
 
         binding.resumeGame.setOnClickListener {

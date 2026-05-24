@@ -14,3 +14,4 @@ val ON_THE_BRINK_ROLES = setOf("Containment Specialist", "Field Operative", "Arc
         "Generalist", "Epidemiologist").map { Role(it) }.toSet()
 val COMPETITIVE_PLAY_ROLES = BASE_ROLES.union(ON_THE_BRINK_ROLES).union(SECOND_EDITION_ROLES)
         .toSet()
+val ALL_ROLES = BASE_ROLES.union(SECOND_EDITION_ROLES).union(ON_THE_BRINK_ROLES)

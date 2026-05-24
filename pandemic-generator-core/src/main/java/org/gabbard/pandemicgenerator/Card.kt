@@ -30,14 +30,14 @@ class SimpleEpidemic : Epidemic() {
     override fun toString(): String = userString
 }
 
-class NamedEpidemic(val name: String) : Epidemic() {
+data class NamedEpidemic(val name: String) : Epidemic() {
     override val userString: String
         get() = name
 
     override fun toString(): String = userString
 }
 
-class EventCard(val name: String) : PlayerCard() {
+data class EventCard(val name: String) : PlayerCard() {
     override val userString: String
         get() = name
 
@@ -83,6 +83,14 @@ val VIRULENT_STRAIN_EPIDEMICS = setOf("Hidden Pocket", "Rate Effect").map { Name
         .union(CHAMPIONSHIP_VIRULENT_STRAIN_EPIDEMICS).toSet()
 
 val COMPETITIVE_PLAY_EVENTS = setOf("Borrowed Time", "Special Orders", "Mobile Hospital",
-        "Airlift", "Rapid Vaccine Deployment", "Re-examined Research", "Remote Treatrment",
+        "Airlift", "Rapid Vaccine Deployment", "Re-examined Research", "Remote Treatment",
         "Government Grant").map { EventCard(it) }.toSet()
+
+val STANDARD_PANDEMIC_EVENTS = setOf("Airlift", "Government Grant", "Forecast",
+        "One Quiet Night", "Resilient Population").map { EventCard(it) }.toSet()
+
+// One SimpleEpidemic per epidemic slot needed at max difficulty (Heroic = 6)
+val STANDARD_PANDEMIC_EPIDEMICS: Set<Epidemic> = (1..6).map { SimpleEpidemic() }.toSet()
+
+val ALL_KNOWN_EVENTS: Set<EventCard> = STANDARD_PANDEMIC_EVENTS.union(COMPETITIVE_PLAY_EVENTS)
 
