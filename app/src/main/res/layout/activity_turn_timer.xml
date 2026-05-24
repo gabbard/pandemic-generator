@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".TurnTimer">
 
+    <TextView
+        android:id="@+id/currentPlayerRole"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <Chronometer
         android:id="@+id/timeRemaining"
         android:layout_width="0dp"
@@ -16,7 +28,7 @@
         app:layout_constraintBottom_toTopOf="@+id/drawPlayerCards"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/currentPlayerRole" />
 
     <Button
         android:id="@+id/drawPlayerCards"
