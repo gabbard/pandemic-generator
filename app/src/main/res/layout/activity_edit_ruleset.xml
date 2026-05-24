@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/ruleset_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Rule set name"
+            android:inputType="text"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Player Counts -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Allowed Player Counts"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <CheckBox
+            android:id="@+id/player_count_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2 players" />
+
+        <CheckBox
+            android:id="@+id/player_count_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3 players" />
+
+        <CheckBox
+            android:id="@+id/player_count_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4 players"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Epidemic Cards -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Epidemic Cards"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioGroup
+            android:id="@+id/epidemic_type_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/epidemic_simple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Simple (Standard Pandemic)"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/epidemic_named"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Named (Virulent Strain)" />
+
+        </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/named_epidemics_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Difficulties -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Difficulties"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/difficulties_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/add_difficulty_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Difficulty"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Events -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Available Events"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/events_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Number of events to include per game"
+                android:gravity="center_vertical" />
+
+            <EditText
+                android:id="@+id/num_events_to_use"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:text="5" />
+
+        </LinearLayout>
+
+        <!-- Roles -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Available Roles"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/roles_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Rule Set" />
+
+    </LinearLayout>
+</ScrollView>
