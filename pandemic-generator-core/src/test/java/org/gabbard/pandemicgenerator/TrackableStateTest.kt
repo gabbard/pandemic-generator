@@ -171,6 +171,63 @@ class TrackableStateTest {
         assertEquals(expectedCity, result.epidemicsAndInfectedCities[0].second)
     }
 
+    // ── event log ────────────────────────────────────────────────────────────
+
+    @Test
+    fun infectAppendsInfectionEventToLog() {
+        val state = makeState(lastTransition = Transition.DRAW_PLAYER_CARDS)
+        val result = state.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
+        val log = result.newGameState.eventLog
+        assertEquals(1, log.size)
+        val event = log[0] as GameEvent.InfectionEvent
+        assertEquals(result.infectedCities, event.infectedCities)
+    }
+
+    @Test
+    fun drawPlayerCardsAppendsDrawEventToLog() {
+        val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
+        val log = result.newGameState.eventLog
+        assertEquals(1, log.size)
+        val event = log[0] as GameEvent.DrawPlayerCardsEvent
+        assertEquals(result.cardsDrawn, event.cardsDrawn)
+        assertEquals(result.epidemicsAndInfectedCities, event.epidemicsAndInfectedCities)
+    }
+
+    @Test
+    fun epidemicEventRecordsEpidemicCityPair() {
+        val epidemic = NamedEpidemic("Test Epidemic")
+        val cityCards = listOf(epidemic) + ALL_CITIES.take(4).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
+        val event = result.newGameState.eventLog[0] as GameEvent.DrawPlayerCardsEvent
+        assertEquals(1, event.epidemicsAndInfectedCities.size)
+        assertEquals(result.epidemicsAndInfectedCities, event.epidemicsAndInfectedCities)
+    }
+
+    @Test
+    fun eventLogAccumulatesAcrossTransitions() {
+        val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val afterDraw = (state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        val afterInfect = (afterDraw.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(2, afterInfect.eventLog.size)
+        assertTrue(afterInfect.eventLog[0] is GameEvent.DrawPlayerCardsEvent)
+        assertTrue(afterInfect.eventLog[1] is GameEvent.InfectionEvent)
+    }
+
+    @Test
+    fun initialStateHasEmptyEventLog() {
+        val state = makeState()
+        assertTrue(state.eventLog.isEmpty())
+    }
+
     // ── player deck exhaustion ───────────────────────────────────────────────
 
     @Test
