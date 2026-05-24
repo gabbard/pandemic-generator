@@ -7,13 +7,12 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.view.View
 import android.widget.Chronometer
-import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityTurnTimerBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import java.util.*
 
 
-class TurnTimer : AppCompatActivity() {
+class TurnTimer : GameActivity() {
     private lateinit var binding: ActivityTurnTimerBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
@@ -35,6 +34,8 @@ class TurnTimer : AppCompatActivity() {
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
+
+        GameRepository.save(this, GameRepository.GameSession(gameState!!, rng!!, seed))
 
         binding.timeRemaining.isCountDown = true
         binding.timeRemaining.start()

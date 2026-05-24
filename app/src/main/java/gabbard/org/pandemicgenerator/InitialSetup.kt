@@ -3,14 +3,13 @@ package gabbard.org.pandemicgenerator
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityInitialSetupBinding
 import org.gabbard.pandemicgenerator.NATIONAL_CHAMPIONSHIP_RULES
 import org.gabbard.pandemicgenerator.TrackableState
 import java.util.*
 
 
-class InitialSetup : AppCompatActivity() {
+class InitialSetup : GameActivity() {
     private lateinit var binding: ActivityInitialSetupBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
