@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityDrawPlayerCardsBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
-import org.gabbard.pandemicgenerator.messageForTransitionResult
 import java.util.*
 
 class DrawPlayerCards : AppCompatActivity() {
@@ -33,9 +32,18 @@ class DrawPlayerCards : AppCompatActivity() {
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
 
-        val drawResult = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
-        gameState = drawResult.newGameState
-        binding.drawResultMessage.text = messageForTransitionResult(drawResult)
+        val result = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
+                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+        gameState = result.newGameState
+
+        val container = binding.cardsContainer
+        container.addSectionHeader("Cards drawn:")
+        result.cardsDrawn.forEach { container.addPlayerCardRow(it) }
+
+        for ((epidemic, city) in result.epidemicsAndInfectedCities) {
+            container.addSectionHeader("Epidemic: ${epidemic.userString}")
+            container.addCityRow(city, "infected from bottom")
+        }
     }
 
     fun onProceedToInfectionPhase(@Suppress("UNUSED_PARAMETER") view: View) {

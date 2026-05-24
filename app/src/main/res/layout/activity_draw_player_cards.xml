@@ -6,17 +6,23 @@
     android:layout_height="match_parent"
     tools:context=".DrawPlayerCards">
 
-    <TextView
-        android:id="@+id/drawResultMessage"
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="TextView"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/proceedToInfectionPhase"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/cardsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp" />
+
+    </ScrollView>
 
     <Button
         android:id="@+id/proceedToInfectionPhase"
@@ -33,9 +39,9 @@
         android:id="@+id/seedDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:alpha="0.5"
         android:padding="8dp"
         android:textSize="11sp"
-        android:alpha="0.5"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
