@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'jacoco'
 
 android {
     namespace 'gabbard.org.pandemicgenerator'
@@ -31,8 +32,35 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
+            }
         }
     }
+}
+
+// AGP 8 + Robolectric: use the exec file produced by enableUnitTestCoverage and
+// process it against the Kotlin class output directly, bypassing the AGP
+// createDebugUnitTestCoverageReport task whose class-path alignment is broken.
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+    reports {
+        xml.required = true
+        html.required = false
+    }
+    def excludes = ['**/R.class', '**/R$*.class', '**/BuildConfig.*',
+                    '**/Manifest*.*', '**/*Test*.*', '**/databinding/**']
+    classDirectories.setFrom(files(
+        fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: excludes)
+    ))
+    sourceDirectories.setFrom(files("${projectDir}/src/main/java"))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        'jacoco/testDebugUnitTest.exec',
+        'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
+    ]))
 }
 
 dependencies {
