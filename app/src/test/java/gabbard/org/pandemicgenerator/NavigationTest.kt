@@ -23,6 +23,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.shadows.ShadowAlertDialog
 import java.util.Random
 
 /**
@@ -210,6 +212,70 @@ class NavigationTest {
             putExtra(TurnTimer.SEED, 42L)
             putExtra(TurnTimer.TURN_DURATION, TurnTimer.NO_TIMER)
         }
+
+    // ── MainActivity resume-game click ────────────────────────────────────────
+
+    @Test
+    fun resumeGameClickNavigatesToTurnTimer() {
+        GameRepository.save(context, makeGameSession())
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.resumeGame).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                assertEquals(TurnTimer::class.java.name, started.component?.className)
+            }
+        }
+    }
+
+    @Test
+    fun resumeGameClickPassesSavedStateToTurnTimer() {
+        val session = makeGameSession()
+        GameRepository.save(context, session)
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.resumeGame).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                val passedState = started.getSerializableExtra(TurnTimer.GAME_STATE) as TrackableState
+                assertEquals(session.trackableState, passedState)
+            }
+        }
+    }
+
+    // ── GameActivity options menu ──────────────────────────────────────────────
+
+    @Test
+    fun viewLogMenuItemStartsGameLogActivity() {
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                assertEquals(GameLogActivity::class.java.name, started.component?.className)
+            }
+        }
+    }
+
+    @Test
+    fun viewLogMenuItemPassesCurrentStateToGameLogActivity() {
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(started.getSerializableExtra(GameLogActivity.GAME_STATE))
+            }
+        }
+    }
+
+    @Test
+    fun endGameMenuItemShowsConfirmationDialog() {
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_end_game))
+                assertNotNull("End Game dialog should appear", ShadowAlertDialog.getLatestAlertDialog())
+            }
+        }
+    }
 
     private fun makeGameSession(): GameRepository.GameSession =
         GameRepository.GameSession(
