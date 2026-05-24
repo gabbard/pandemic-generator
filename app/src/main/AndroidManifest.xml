@@ -22,7 +22,8 @@
         <activity android:name=".EditRuleSetActivity" />
         <activity android:name=".TurnTimer" />
         <activity android:name=".DrawPlayerCards" />
-        <activity android:name=".InfectionActivity"></activity>
+        <activity android:name=".InfectionActivity" />
+        <activity android:name=".GameOverActivity" />
     </application>
 
 </manifest>

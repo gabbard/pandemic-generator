@@ -48,7 +48,7 @@ class TrackableStateTest {
         val state = makeState(lastTransition = Transition.DRAW_PLAYER_CARDS,
             infectionRate = InfectionRate.INITIAL)
         val result = state.executeTransition(Transition.INFECT, rng)
-                as TrackableState.TransitionResult.InfectionTransitionResult
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
         assertEquals(InfectionRate.INITIAL.numInfectionCardsToDraw, result.infectedCities.size)
     }
 
@@ -62,7 +62,7 @@ class TrackableStateTest {
             lastTransition = Transition.DRAW_PLAYER_CARDS
         )
         val result = state.executeTransition(Transition.INFECT, rng)
-                as TrackableState.TransitionResult.InfectionTransitionResult
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
         val newState = result.newGameState
 
         // drawn cities moved from deck to discard
@@ -80,7 +80,7 @@ class TrackableStateTest {
             lastTransition = Transition.DRAW_PLAYER_CARDS
         )
         val result = state.executeTransition(Transition.INFECT, rng)
-                as TrackableState.TransitionResult.InfectionTransitionResult
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
         val numDrawn = InfectionRate.INITIAL.numInfectionCardsToDraw
         assertEquals(cities.take(numDrawn), result.infectedCities)
     }
@@ -89,6 +89,7 @@ class TrackableStateTest {
     fun infectSetsLastTransition() {
         val state = makeState(lastTransition = Transition.DRAW_PLAYER_CARDS)
         val result = state.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
         assertEquals(Transition.INFECT, result.newGameState.lastTransition)
     }
 
@@ -99,7 +100,7 @@ class TrackableStateTest {
         val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
         val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         assertEquals(2, result.cardsDrawn.size)
         assertEquals(3, result.newGameState.playerDeck.cards.size)
     }
@@ -109,6 +110,7 @@ class TrackableStateTest {
         val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
         val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         assertEquals(Transition.DRAW_PLAYER_CARDS, result.newGameState.lastTransition)
     }
 
@@ -117,7 +119,7 @@ class TrackableStateTest {
         val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
         val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         assertTrue(result.epidemicsAndInfectedCities.isEmpty())
     }
 
@@ -133,7 +135,7 @@ class TrackableStateTest {
             lastTransition = Transition.INFECT
         )
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         assertEquals(InfectionRate.STEP_TWO, result.newGameState.infectionRate)
     }
 
@@ -146,7 +148,7 @@ class TrackableStateTest {
             lastTransition = Transition.INFECT
         )
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         assertTrue(result.newGameState.infectionDiscardPile.isEmpty())
     }
 
@@ -162,11 +164,38 @@ class TrackableStateTest {
             lastTransition = Transition.INFECT
         )
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         // bottom of deck = last element
         val expectedCity = infectionCities.last()
         assertEquals(1, result.epidemicsAndInfectedCities.size)
         assertEquals(expectedCity, result.epidemicsAndInfectedCities[0].second)
+    }
+
+    // ── player deck exhaustion ───────────────────────────────────────────────
+
+    @Test
+    fun drawPlayerCardsReturnsExhaustedWhenDeckIsEmpty() {
+        val state = makeState(playerCards = emptyList(), lastTransition = Transition.INFECT)
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+        assertEquals(TrackableState.TransitionResult.PlayerDeckExhausted, result)
+    }
+
+    @Test
+    fun drawPlayerCardsReturnsExhaustedWhenOnlyOneCardRemains() {
+        val state = makeState(
+            playerCards = listOf(CityPlayerCard(ALL_CITIES.first())),
+            lastTransition = Transition.INFECT
+        )
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+        assertEquals(TrackableState.TransitionResult.PlayerDeckExhausted, result)
+    }
+
+    @Test
+    fun drawPlayerCardsSucceedsWhenExactlyTwoCardsRemain() {
+        val cityCards = ALL_CITIES.take(2).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+        assertTrue(result is TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult)
     }
 
     @Test
@@ -185,7 +214,7 @@ class TrackableStateTest {
         val preDiscardSize = discardCities.size
 
         val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
-                as TrackableState.TransitionResult.DrawPlayerCardsTransitionResult
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
         val newDeck = result.newGameState.infectionDeck
 
         // new deck = old discard (shuffled) + old bottom-card + remaining deck cards

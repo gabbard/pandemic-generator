@@ -49,20 +49,25 @@ data class TrackableState(val curPlayer: Int,
                 == ALL_CITIES)
     }
 
-    sealed class TransitionResult(open val newGameState: TrackableState) {
+    sealed class TransitionResult {
 
-        data class InfectionTransitionResult(override val newGameState: TrackableState,
-                                             val infectedCities: List<City>)
-            : TransitionResult(newGameState)
+        sealed class Success : TransitionResult() {
+            abstract val newGameState: TrackableState
 
-        data class DrawPlayerCardsTransitionResult(
-                override val newGameState: TrackableState,
-                val cardsDrawn: List<PlayerCard>,
-                val epidemicsAndInfectedCities: List<Pair<Epidemic, City>>) : TransitionResult(newGameState) {
-            init {
-                require(cardsDrawn.containsAll(epidemicsAndInfectedCities.map { it.first }))
+            data class InfectionTransitionResult(override val newGameState: TrackableState,
+                                                 val infectedCities: List<City>) : Success()
+
+            data class DrawPlayerCardsTransitionResult(
+                    override val newGameState: TrackableState,
+                    val cardsDrawn: List<PlayerCard>,
+                    val epidemicsAndInfectedCities: List<Pair<Epidemic, City>>) : Success() {
+                init {
+                    require(cardsDrawn.containsAll(epidemicsAndInfectedCities.map { it.first }))
+                }
             }
         }
+
+        object PlayerDeckExhausted : TransitionResult()
     }
 
 
@@ -70,11 +75,14 @@ data class TrackableState(val curPlayer: Int,
         when (transition) {
             Transition.INFECT -> {
                 val infectionResult = infect()
-                return TransitionResult.InfectionTransitionResult(
+                return TransitionResult.Success.InfectionTransitionResult(
                         infectionResult.newGameState.copy(lastTransition = transition),
                         infectionResult.infectedCities)
             }
             Transition.DRAW_PLAYER_CARDS -> {
+                if (playerDeck.cards.size < 2) {
+                    return TransitionResult.PlayerDeckExhausted
+                }
                 val (cardsDrawn, postDrawState) = drawPlayerCards()
                 var curState = postDrawState
                 val epidemics = cardsDrawn.filterIsInstance<Epidemic>()
@@ -85,7 +93,7 @@ data class TrackableState(val curPlayer: Int,
                     curState = postEpidemicGameState
                     epidemicsToCitiesInfected.add(Pair(epidemic, newCity))
                 }
-                return TransitionResult.DrawPlayerCardsTransitionResult(
+                return TransitionResult.Success.DrawPlayerCardsTransitionResult(
                         curState.copy(lastTransition = transition), cardsDrawn,
                         epidemicsToCitiesInfected)
             }
