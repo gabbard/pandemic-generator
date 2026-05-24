@@ -14,9 +14,11 @@ class InitialSetup : AppCompatActivity() {
     private lateinit var binding: ActivityInitialSetupBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
+    private var seed: Long = 0
 
     companion object {
         const val RANDOM_SOURCE = "random_source"
+        const val SEED = "seed"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +27,8 @@ class InitialSetup : AppCompatActivity() {
         setContentView(binding.root)
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
+        seed = intent.getLongExtra(SEED, 0)
+        binding.seedDisplay.text = "Seed: $seed"
 
         val fullGameState = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng!!)
         gameState = fullGameState.trackableState
@@ -43,6 +47,7 @@ class InitialSetup : AppCompatActivity() {
         val turnTimerIntent = Intent(this, TurnTimer::class.java)
         turnTimerIntent.putExtra(TurnTimer.GAME_STATE, gameState)
         turnTimerIntent.putExtra(TurnTimer.RANDOM_SOURCE, rng)
+        turnTimerIntent.putExtra(TurnTimer.SEED, seed)
         startActivity(turnTimerIntent)
     }
 }

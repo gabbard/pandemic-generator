@@ -14,10 +14,12 @@ class DrawPlayerCards : AppCompatActivity() {
     private lateinit var binding: ActivityDrawPlayerCardsBinding
     private var gameState: TrackableState? = null
     private var rng: Random? = null
+    private var seed: Long = 0
 
     companion object {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
+        const val SEED = "seed"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,16 +30,19 @@ class DrawPlayerCards : AppCompatActivity() {
         gameState = intent.getSerializableExtra(DrawPlayerCards.GAME_STATE) as TrackableState
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(DrawPlayerCards.RANDOM_SOURCE) as Random
-        val drawResult = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
+        seed = intent.getLongExtra(SEED, 0)
+        binding.seedDisplay.text = "Seed: $seed"
 
+        val drawResult = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)
         gameState = drawResult.newGameState
         binding.drawResultMessage.text = messageForTransitionResult(drawResult)
     }
 
     fun onProceedToInfectionPhase(@Suppress("UNUSED_PARAMETER") view: View) {
-        val infetionIntent = Intent(this, InfectionActivity::class.java)
-        infetionIntent.putExtra(InfectionActivity.GAME_STATE, gameState!!)
-        infetionIntent.putExtra(InfectionActivity.RANDOM_SOURCE, rng!!)
-        startActivity(infetionIntent)
+        val infectionIntent = Intent(this, InfectionActivity::class.java)
+        infectionIntent.putExtra(InfectionActivity.GAME_STATE, gameState!!)
+        infectionIntent.putExtra(InfectionActivity.RANDOM_SOURCE, rng!!)
+        infectionIntent.putExtra(InfectionActivity.SEED, seed)
+        startActivity(infectionIntent)
     }
 }
