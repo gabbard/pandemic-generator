@@ -40,6 +40,9 @@ class InfectionActivity : GameActivity() {
         result.infectedCities.forEach { binding.infectedCities.addCityRow(it) }
     }
 
+    override fun gameStateForLog() = gameState
+    override fun seedForLog() = seed
+
     fun onNextTurn(@Suppress("UNUSED_PARAMETER") view: View) {
         val turnTimerIntent = Intent(this, TurnTimer::class.java)
         turnTimerIntent.putExtra(TurnTimer.GAME_STATE, gameState!!)

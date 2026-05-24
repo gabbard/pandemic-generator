@@ -32,13 +32,22 @@ data class CityState(val infections: Map<Color, Int>) : Serializable {
 
 data class BoardState(val cityStates: Map<City, CityState>) : Serializable
 
+sealed class GameEvent : Serializable {
+    data class InfectionEvent(val infectedCities: List<City>) : GameEvent()
+    data class DrawPlayerCardsEvent(
+        val cardsDrawn: List<PlayerCard>,
+        val epidemicsAndInfectedCities: List<Pair<Epidemic, City>>
+    ) : GameEvent()
+}
+
 data class TrackableState(val curPlayer: Int,
                           val players: List<Player>,
                           val infectionDeck: Deck<InfectionCard>,
                           val infectionDiscardPile: Set<InfectionCard>,
                           val playerDeck: Deck<PlayerCard>,
                           val infectionRate: InfectionRate,
-                          val lastTransition: Transition) : Serializable {
+                          val lastTransition: Transition,
+                          val eventLog: List<GameEvent> = emptyList()) : Serializable {
     init {
         require(players.size in 2..4)
         require(curPlayer in 0..(players.size - 1))
@@ -75,8 +84,11 @@ data class TrackableState(val curPlayer: Int,
         when (transition) {
             Transition.INFECT -> {
                 val infectionResult = infect()
+                val event = GameEvent.InfectionEvent(infectionResult.infectedCities)
                 return TransitionResult.Success.InfectionTransitionResult(
-                        infectionResult.newGameState.copy(lastTransition = transition),
+                        infectionResult.newGameState.copy(
+                                lastTransition = transition,
+                                eventLog = eventLog + event),
                         infectionResult.infectedCities)
             }
             Transition.DRAW_PLAYER_CARDS -> {
@@ -93,8 +105,12 @@ data class TrackableState(val curPlayer: Int,
                     curState = postEpidemicGameState
                     epidemicsToCitiesInfected.add(Pair(epidemic, newCity))
                 }
+                val event = GameEvent.DrawPlayerCardsEvent(cardsDrawn, epidemicsToCitiesInfected)
                 return TransitionResult.Success.DrawPlayerCardsTransitionResult(
-                        curState.copy(lastTransition = transition), cardsDrawn,
+                        curState.copy(
+                                lastTransition = transition,
+                                eventLog = eventLog + event),
+                        cardsDrawn,
                         epidemicsToCitiesInfected)
             }
         }

@@ -30,6 +30,7 @@ fun messageForTransitionResult(result: TrackableState.TransitionResult): String 
             "GAME OVER: The player deck ran out of cards. You lost!"
     }
 }
+
 fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
     print("Enter random seed: ")
     val rng = Random(readLine()!!.toLong())
