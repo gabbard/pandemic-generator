@@ -64,10 +64,12 @@ class EditRuleSetActivity : AppCompatActivity() {
         if (existingRuleSet != null) {
             populateFromRuleSet(existingRuleSet, eventCheckBoxes, roleCheckBoxes)
         } else {
-            // Default: add one difficulty row
-            addDifficultyRow(null)
-            // Default: allow 2 players
             binding.playerCount2.isChecked = true
+            binding.playerCount3.isChecked = true
+            binding.playerCount4.isChecked = true
+            for (difficulty in STANDARD_PANDEMIC.availableDifficulties) {
+                addDifficultyRow(difficulty)
+            }
         }
 
         binding.saveButton.setOnClickListener {
