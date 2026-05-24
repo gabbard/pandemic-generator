@@ -48,7 +48,7 @@ data class Deck<CardType : Card>(val cards: List<CardType>) : Serializable {
     fun shuffled(rng: Random) = Deck(cards.shuffled(rng))
     fun draw(numToDraw: Int): Pair<List<CardType>, Deck<CardType>> {
         require(numToDraw <= cards.size)
-        return Pair(cards.subList(0, numToDraw), Deck(cards.subList(numToDraw, cards.size).toList()))
+        return Pair(cards.subList(0, numToDraw).toList(), Deck(cards.subList(numToDraw, cards.size).toList()))
     }
 
     fun drawOneFromTheBottom(): Pair<CardType, Deck<CardType>> {
