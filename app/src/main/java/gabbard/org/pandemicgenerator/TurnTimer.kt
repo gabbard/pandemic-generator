@@ -34,6 +34,7 @@ class TurnTimer : GameActivity() {
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
+        binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
         GameRepository.save(this, GameRepository.GameSession(gameState!!, rng!!, seed))
 
