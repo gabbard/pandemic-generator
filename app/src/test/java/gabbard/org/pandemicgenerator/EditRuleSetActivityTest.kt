@@ -129,6 +129,19 @@ class EditRuleSetActivityTest {
     }
 
     @Test
+    fun newRuleSetHasAllEventsChecked() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                val eventsContainer = activity.findViewById<LinearLayout>(R.id.events_container)
+                for (i in 0 until eventsContainer.childCount) {
+                    val child = eventsContainer.getChildAt(i) as? CheckBox ?: continue
+                    assertTrue("Event '${child.text}' should be checked by default", child.isChecked)
+                }
+            }
+        }
+    }
+
+    @Test
     fun rolesContainerIsPopulated() {
         ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
             scenario.onActivity { activity ->

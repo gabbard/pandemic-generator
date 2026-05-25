@@ -70,6 +70,9 @@ class EditRuleSetActivity : AppCompatActivity() {
             for (difficulty in STANDARD_PANDEMIC.availableDifficulties) {
                 addDifficultyRow(difficulty)
             }
+            for ((_, cb) in eventCheckBoxes) {
+                cb.isChecked = true
+            }
         }
 
         binding.saveButton.setOnClickListener {
