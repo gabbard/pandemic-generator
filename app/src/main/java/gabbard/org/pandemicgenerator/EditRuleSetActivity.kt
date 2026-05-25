@@ -70,8 +70,8 @@ class EditRuleSetActivity : AppCompatActivity() {
             for (difficulty in STANDARD_PANDEMIC.availableDifficulties) {
                 addDifficultyRow(difficulty)
             }
-            for ((_, cb) in eventCheckBoxes) {
-                cb.isChecked = true
+            for ((event, cb) in eventCheckBoxes) {
+                cb.isChecked = event in STANDARD_PANDEMIC_EVENTS
             }
         }
 
