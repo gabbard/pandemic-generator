@@ -179,7 +179,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Note: The Troubleshooter is not listed because it requires viewing the top infection cards, which is not supported in multi-board games."
+            android:text="Note: The Troubleshooter is not listed because it requires viewing the top infection cards, which is not yet implemented."
             android:textStyle="italic"
             android:textSize="13sp"
             android:layout_marginTop="4dp"
