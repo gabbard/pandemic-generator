@@ -49,8 +49,8 @@ class EditRuleSetActivity : AppCompatActivity() {
             eventCheckBoxes[event] = cb
         }
 
-        // Pre-populate role checkboxes from ALL_ROLES
-        val sortedRoles = ALL_ROLES.sortedBy { it.name }
+        // Pre-populate role checkboxes, excluding roles unsupported in multi-board games
+        val sortedRoles = MULTI_BOARD_COMPATIBLE_ROLES.sortedBy { it.name }
         val roleCheckBoxes = mutableMapOf<Role, CheckBox>()
         for (role in sortedRoles) {
             val cb = CheckBox(this).apply { text = role.name }
