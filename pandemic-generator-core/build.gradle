@@ -31,4 +31,9 @@ jacocoTestReport {
         xml.required = true
         html.required = false
     }
+    // Exclude standalone CLI tools — they're main() entry points, not library API
+    def excludes = ['**/ComputeDeckBoundariesKt*', '**/PandemicGeneratorCliKt*']
+    classDirectories.setFrom(
+        fileTree(dir: "${buildDir}/classes/kotlin/main", excludes: excludes)
+    )
 }

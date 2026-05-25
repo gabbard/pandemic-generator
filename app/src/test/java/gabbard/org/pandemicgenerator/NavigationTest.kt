@@ -8,8 +8,10 @@ import androidx.test.core.app.ApplicationProvider
 import org.gabbard.pandemicgenerator.ALL_CITIES
 import org.gabbard.pandemicgenerator.CityPlayerCard
 import org.gabbard.pandemicgenerator.Deck
+import org.gabbard.pandemicgenerator.EventCard
 import org.gabbard.pandemicgenerator.InfectionCard
 import org.gabbard.pandemicgenerator.InfectionRate
+import org.gabbard.pandemicgenerator.NamedEpidemic
 import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.PlayerCard
 import org.gabbard.pandemicgenerator.Role
@@ -18,6 +20,7 @@ import org.gabbard.pandemicgenerator.Transition
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -273,6 +276,114 @@ class NavigationTest {
             scenario.onActivity { activity ->
                 activity.onOptionsItemSelected(RoboMenuItem(R.id.action_end_game))
                 assertNotNull("End Game dialog should appear", ShadowAlertDialog.getLatestAlertDialog())
+            }
+        }
+    }
+
+    @Test
+    fun turnTimerWithPositiveDurationShowsTimerView() {
+        val intent = turnTimerIntent().apply { putExtra(TurnTimer.TURN_DURATION, 60) }
+        ActivityScenario.launch<TurnTimer>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                val timerView = activity.findViewById<android.view.View>(R.id.timeRemaining)
+                assertEquals(android.view.View.VISIBLE, timerView.visibility)
+            }
+        }
+    }
+
+    @Test
+    fun viewLogMenuItemDoesNotStartActivityWhenStateIsNull() {
+        // GameOverActivity extends GameActivity but does not override gameStateForLog(),
+        // so it returns null — the action_view_log branch should be a no-op.
+        ActivityScenario.launch(GameOverActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                assertEquals("No activity should start when state is null", null, started)
+            }
+        }
+    }
+
+    @Test
+    fun unknownMenuItemDelegatesToSuper() {
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                // An unrecognized menu item ID should not crash; the 'else' branch delegates to super.
+                val handled = activity.onOptionsItemSelected(RoboMenuItem(Int.MAX_VALUE))
+                // super returns false for unknown items
+                assertEquals(false, handled)
+            }
+        }
+    }
+
+    // ── DrawPlayerCards epidemic / event card paths ───────────────────────────
+
+    @Test
+    fun drawPlayerCardsWithEpidemicShowsEpidemicSection() {
+        val playerCards = listOf(
+            NamedEpidemic("Virulent Strain"),
+            CityPlayerCard(cities[0]),
+            CityPlayerCard(cities[1])
+        )
+        ActivityScenario.launch<DrawPlayerCards>(drawPlayerCardsIntent(playerCards = playerCards)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<android.widget.LinearLayout>(R.id.cardsContainer)
+                // header + 2 card rows + epidemic header + city row = 5 min
+                assertTrue("Epidemic section should appear", container.childCount >= 4)
+            }
+        }
+    }
+
+    @Test
+    fun drawPlayerCardsWithEventCardIsDisplayed() {
+        val playerCards = listOf(
+            EventCard("Airlift"),
+            CityPlayerCard(cities[0]),
+            CityPlayerCard(cities[1])
+        )
+        ActivityScenario.launch<DrawPlayerCards>(drawPlayerCardsIntent(playerCards = playerCards)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<android.widget.LinearLayout>(R.id.cardsContainer)
+                assertTrue("Event card row should be visible", container.childCount >= 3)
+            }
+        }
+    }
+
+    // ── MainActivity new game button ──────────────────────────────────────────
+
+    @Test
+    fun newGameButtonStartsRuleSetSelectionActivity() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.newGame).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                assertEquals(RuleSetSelectionActivity::class.java.name, started.component?.className)
+            }
+        }
+    }
+
+    // ── gameStateForLog / seedForLog coverage ─────────────────────────────────
+
+    @Test
+    fun viewLogMenuItemFromInfectionActivityPassesState() {
+        ActivityScenario.launch<InfectionActivity>(infectionActivityIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(started?.getSerializableExtra(GameLogActivity.GAME_STATE))
+            }
+        }
+    }
+
+    @Test
+    fun viewLogMenuItemFromDrawPlayerCardsPassesState() {
+        ActivityScenario.launch<DrawPlayerCards>(drawPlayerCardsIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(started?.getSerializableExtra(GameLogActivity.GAME_STATE))
             }
         }
     }

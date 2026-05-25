@@ -122,6 +122,29 @@ class GameLogActivityTest {
         }
     }
 
+    // ── DrawPlayerCardsEvent with epidemic ────────────────────────────────────
+
+    @Test
+    fun drawPlayerCardsEventWithEpidemicAppearsInLog() {
+        val epidemic = NamedEpidemic("Virulent")
+        val city = cities[0]
+        val event = GameEvent.DrawPlayerCardsEvent(
+            cardsDrawn = listOf(epidemic, CityPlayerCard(cities[1])),
+            epidemicsAndInfectedCities = listOf(epidemic to city)
+        )
+        val state = makeState(eventLog = listOf(event))
+        ActivityScenario.launch<GameLogActivity>(intentFor(state)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
+                val headers = (0 until container.childCount)
+                    .map { container.getChildAt(it) }
+                    .filterIsInstance<TextView>()
+                    .map { it.text.toString() }
+                assertTrue("Epidemic section should appear in log", headers.any { it.contains("Epidemic") })
+            }
+        }
+    }
+
     // ── close button ──────────────────────────────────────────────────────────
 
     @Test
