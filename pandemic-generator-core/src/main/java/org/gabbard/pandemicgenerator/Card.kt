@@ -94,3 +94,12 @@ val STANDARD_PANDEMIC_EPIDEMICS: Set<Epidemic> = (1..6).map { SimpleEpidemic() }
 
 val ALL_KNOWN_EVENTS: Set<EventCard> = STANDARD_PANDEMIC_EVENTS.union(COMPETITIVE_PLAY_EVENTS)
 
+// Events that interact with the infection deck/phase and cannot be used in multi-board games:
+// Forecast (reorders infection cards), One Quiet Night (skips infection phase),
+// Resilient Population (removes city from infection deck), Commercial Travel Ban (changes infection rate).
+val INFECTION_DECK_INTERACTION_EVENTS: Set<EventCard> = setOf(
+    "Forecast", "One Quiet Night", "Resilient Population", "Commercial Travel Ban"
+).map { EventCard(it) }.toSet()
+
+val MULTI_BOARD_COMPATIBLE_EVENTS: Set<EventCard> = ALL_KNOWN_EVENTS - INFECTION_DECK_INTERACTION_EVENTS
+

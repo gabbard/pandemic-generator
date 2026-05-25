@@ -40,8 +40,8 @@ class EditRuleSetActivity : AppCompatActivity() {
                 if (checkedId == R.id.epidemic_named) android.view.View.VISIBLE else android.view.View.GONE
         }
 
-        // Pre-populate all event checkboxes from ALL_KNOWN_EVENTS
-        val sortedEvents = ALL_KNOWN_EVENTS.sortedBy { it.name }
+        // Pre-populate event checkboxes, excluding events that require infection deck interaction
+        val sortedEvents = MULTI_BOARD_COMPATIBLE_EVENTS.sortedBy { it.name }
         val eventCheckBoxes = mutableMapOf<EventCard, CheckBox>()
         for (event in sortedEvents) {
             val cb = CheckBox(this).apply { text = event.name }

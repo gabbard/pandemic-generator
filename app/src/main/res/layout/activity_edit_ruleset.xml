@@ -129,6 +129,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Note: Forecast, One Quiet Night, Resilient Population, and Commercial Travel Ban are not listed because they interact with the infection deck and cannot be used in multi-board games."
+            android:textStyle="italic"
+            android:textSize="13sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
