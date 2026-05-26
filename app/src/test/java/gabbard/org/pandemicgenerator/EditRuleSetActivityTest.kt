@@ -11,8 +11,10 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
+import org.gabbard.pandemicgenerator.MULTI_BOARD_COMPATIBLE_EVENTS
 import org.gabbard.pandemicgenerator.NATIONAL_CHAMPIONSHIP
 import org.gabbard.pandemicgenerator.RuleSet
+import org.gabbard.pandemicgenerator.STANDARD_PANDEMIC_EVENTS
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -124,6 +126,26 @@ class EditRuleSetActivityTest {
                     "events_container should have at least one child",
                     eventsContainer.childCount > 0
                 )
+            }
+        }
+    }
+
+    @Test
+    fun newRuleSetDefaultsToStandardPandemicEvents() {
+        val expectedChecked = (STANDARD_PANDEMIC_EVENTS intersect MULTI_BOARD_COMPATIBLE_EVENTS)
+            .map { it.name }.toSet()
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                val eventsContainer = activity.findViewById<LinearLayout>(R.id.events_container)
+                for (i in 0 until eventsContainer.childCount) {
+                    val child = eventsContainer.getChildAt(i) as? CheckBox ?: continue
+                    val shouldBeChecked = child.text.toString() in expectedChecked
+                    assertEquals(
+                        "Event '${child.text}' checked state wrong",
+                        shouldBeChecked,
+                        child.isChecked
+                    )
+                }
             }
         }
     }
