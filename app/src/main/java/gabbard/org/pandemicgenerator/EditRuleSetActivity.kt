@@ -210,14 +210,8 @@ class EditRuleSetActivity : AppCompatActivity() {
                 val cb = binding.namedEpidemicsContainer.getChildAt(i) as? CheckBox ?: continue
                 if (cb.isChecked) selected.add(NamedEpidemic(cb.text.toString()))
             }
-            if (selected.size < maxEpidemics) {
-                Toast.makeText(
-                    this,
-                    "Select at least $maxEpidemics epidemic cards (max difficulty needs $maxEpidemics)",
-                    Toast.LENGTH_LONG
-                ).show()
-                return null
-            }
+            val remainder = maxEpidemics - selected.size
+            repeat(remainder) { selected.add(SimpleEpidemic()) }
             selected
         }
 

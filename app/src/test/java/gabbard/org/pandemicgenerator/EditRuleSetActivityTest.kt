@@ -13,7 +13,9 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.gabbard.pandemicgenerator.MULTI_BOARD_COMPATIBLE_EVENTS
 import org.gabbard.pandemicgenerator.NATIONAL_CHAMPIONSHIP
+import org.gabbard.pandemicgenerator.NamedEpidemic
 import org.gabbard.pandemicgenerator.RuleSet
+import org.gabbard.pandemicgenerator.SimpleEpidemic
 import org.gabbard.pandemicgenerator.STANDARD_PANDEMIC_EVENTS
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -307,6 +309,37 @@ class EditRuleSetActivityTest {
                 activity.findViewById<EditText>(R.id.num_events_to_use).setText("0")
                 activity.findViewById<View>(R.id.save_button).performClick()
                 assertTrue("Activity should finish with valid named epidemics", activity.isFinishing)
+            }
+        }
+    }
+
+    @Test
+    fun fewerNamedEpidemicsSelectedThanMaxDifficultyPadsWithSimpleEpidemics() {
+        // The default difficulties are Standard Pandemic's (max 6 epidemics).
+        // Select only 2 named epidemics; the other 4 slots should be filled with SimpleEpidemics.
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<EditText>(R.id.ruleset_name).setText("Mixed Epidemic Test")
+                activity.findViewById<RadioGroup>(R.id.epidemic_type_group).check(R.id.epidemic_named)
+                val namedContainer = activity.findViewById<LinearLayout>(R.id.named_epidemics_container)
+                var checked = 0
+                for (i in 0 until namedContainer.childCount) {
+                    val cb = namedContainer.getChildAt(i) as? CheckBox ?: continue
+                    cb.isChecked = checked < 2
+                    if (cb.isChecked) checked++
+                }
+                checkAllRoles(activity)
+                activity.findViewById<EditText>(R.id.num_events_to_use).setText("0")
+                activity.findViewById<View>(R.id.save_button).performClick()
+
+                assertTrue("Activity should finish when remainder is padded with SimpleEpidemics", activity.isFinishing)
+                val saved = RuleSetRepository.load(context)
+                assertEquals(1, saved.size)
+                val epidemics = saved[0].availableEpidemics
+                val maxEpidemics = saved[0].availableDifficulties.maxOf { it.numEpidemics }
+                assertEquals(maxEpidemics, epidemics.size)
+                assertEquals(2, epidemics.filterIsInstance<NamedEpidemic>().size)
+                assertEquals(maxEpidemics - 2, epidemics.filterIsInstance<SimpleEpidemic>().size)
             }
         }
     }
