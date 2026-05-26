@@ -14,4 +14,7 @@ val ON_THE_BRINK_ROLES = setOf("Containment Specialist", "Field Operative", "Arc
         "Generalist", "Epidemiologist").map { Role(it) }.toSet()
 val COMPETITIVE_PLAY_ROLES = BASE_ROLES.union(ON_THE_BRINK_ROLES).union(SECOND_EDITION_ROLES)
         .toSet()
-val ALL_ROLES = BASE_ROLES.union(SECOND_EDITION_ROLES).union(ON_THE_BRINK_ROLES)
+// Troubleshooter requires viewing the top N infection cards, which is not yet implemented.
+val INFECTION_DECK_INTERACTION_ROLES: Set<Role> = setOf(Role("Troubleshooter"))
+val ALL_ROLES = BASE_ROLES.union(SECOND_EDITION_ROLES).union(ON_THE_BRINK_ROLES).union(INFECTION_DECK_INTERACTION_ROLES)
+val MULTI_BOARD_COMPATIBLE_ROLES: Set<Role> = ALL_ROLES - INFECTION_DECK_INTERACTION_ROLES
