@@ -73,6 +73,9 @@ class EditRuleSetActivity : AppCompatActivity() {
             for ((event, cb) in eventCheckBoxes) {
                 cb.isChecked = event in STANDARD_PANDEMIC_EVENTS
             }
+            for ((role, cb) in roleCheckBoxes) {
+                cb.isChecked = role in BASE_ROLES
+            }
         }
 
         binding.saveButton.setOnClickListener {
