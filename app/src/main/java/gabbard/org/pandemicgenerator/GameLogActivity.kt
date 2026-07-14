@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityGameLogBinding
 import org.gabbard.pandemicgenerator.GameEvent
 import org.gabbard.pandemicgenerator.TrackableState
+import org.gabbard.pandemicgenerator.seededColorTiebreakOrder
 
 class GameLogActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGameLogBinding
@@ -30,6 +31,7 @@ class GameLogActivity : AppCompatActivity() {
         if (log.isEmpty()) {
             container.addSectionHeader("No events yet")
         } else {
+            var isFirstEpidemicOfGame = true
             log.forEachIndexed { index, event ->
                 when (event) {
                     is GameEvent.DrawPlayerCardsEvent -> {
@@ -38,6 +40,10 @@ class GameLogActivity : AppCompatActivity() {
                         for ((epidemic, city) in event.epidemicsAndInfectedCities) {
                             container.addSectionHeader("Epidemic: ${epidemic.userString}")
                             container.addCityRow(city, "infected from bottom")
+                            if (isFirstEpidemicOfGame) {
+                                container.addFirstEpidemicVirulentStrainExplanation(seed)
+                                isFirstEpidemicOfGame = false
+                            }
                         }
                     }
                     is GameEvent.InfectionEvent -> {

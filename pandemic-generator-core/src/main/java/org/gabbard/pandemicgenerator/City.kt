@@ -1,9 +1,23 @@
 package org.gabbard.pandemicgenerator
 
 import java.io.Serializable
+import java.util.Random
 
 enum class Color {
     BLUE, YELLOW, BLACK, RED
+}
+
+/**
+ * Returns a deterministic ordering of all four [Color] values, seeded from [seed].
+ *
+ * This is used to break ties when determining which disease becomes "virulent" under the
+ * Virulent Strain challenge (see [Epidemic]): if multiple colors are tied for the most cubes
+ * on the board when the first epidemic is resolved, the color that sorts earliest in this list
+ * wins. Because the ordering is derived solely from the game's seed, it is reproducible for a
+ * given game without needing to be stored anywhere.
+ */
+fun seededColorTiebreakOrder(seed: Long): List<Color> {
+    return Color.entries.shuffled(Random(seed))
 }
 
 data class City(val name: String, val color: Color) : Serializable {
