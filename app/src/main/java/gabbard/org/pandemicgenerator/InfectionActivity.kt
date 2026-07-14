@@ -31,6 +31,7 @@ class InfectionActivity : GameActivity() {
         rng = intent.getSerializableExtra(InfectionActivity.RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
+        binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
         val result = gameState!!.executeTransition(Transition.INFECT, rng!!)
                 as TrackableState.TransitionResult.Success.InfectionTransitionResult

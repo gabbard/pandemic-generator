@@ -31,6 +31,7 @@ class DrawPlayerCards : GameActivity() {
         rng = intent.getSerializableExtra(DrawPlayerCards.RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
+        binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
         when (val result = gameState!!.executeTransition(Transition.DRAW_PLAYER_CARDS, rng!!)) {
             is TrackableState.TransitionResult.PlayerDeckExhausted -> {
