@@ -87,6 +87,7 @@ data class TrackableState(val curPlayer: Int,
                 val event = GameEvent.InfectionEvent(infectionResult.infectedCities)
                 return TransitionResult.Success.InfectionTransitionResult(
                         infectionResult.newGameState.copy(
+                                curPlayer = (curPlayer + 1) % players.size,
                                 lastTransition = transition,
                                 eventLog = eventLog + event),
                         infectionResult.infectedCities)
