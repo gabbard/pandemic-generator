@@ -17,6 +17,7 @@ class TurnTimer : GameActivity() {
     private var gameState: TrackableState? = null
     private var rng: Random? = null
     private var seed: Long = 0
+    private var timerExpired = false
 
     companion object {
         const val GAME_STATE = "game_state"
@@ -51,13 +52,22 @@ class TurnTimer : GameActivity() {
             binding.timeRemaining.onChronometerTickListener = Chronometer.OnChronometerTickListener {
                 val timeTilTarget = targetTime - SystemClock.elapsedRealtime()
                 if (timeTilTarget <= 0) {
-                    try {
-                        val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                        val r = RingtoneManager.getRingtone(applicationContext, notification)
-                        r.play()
-                        binding.timeRemaining.stop()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    // Chronometer computes its own displayed text from the current clock
+                    // reading as part of every tick, independently of this listener. If we
+                    // let that happen, it can render a negative time (e.g. "-0:01") for one
+                    // tick before stop() takes effect. Force the text to a clean zero state
+                    // immediately so nothing negative is ever visible, then stop the timer.
+                    binding.timeRemaining.text = "0:00"
+                    binding.timeRemaining.stop()
+                    if (!timerExpired) {
+                        timerExpired = true
+                        try {
+                            val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                            val r = RingtoneManager.getRingtone(applicationContext, notification)
+                            r.play()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 } else if (timeTilTarget <= 10 * 1000) {
                     window.decorView.setBackgroundColor(Color.RED)
