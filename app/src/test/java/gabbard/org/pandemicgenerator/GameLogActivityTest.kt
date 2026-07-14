@@ -71,7 +71,8 @@ class GameLogActivityTest {
                 // At least the section header was added
                 assertTrue(container.childCount > 0)
                 val header = container.getChildAt(0) as TextView
-                assertTrue(header.text.contains("Drew Player Cards"))
+                assertTrue(header.text.contains("Turn 1"))
+                assertTrue(header.text.contains("Medic"))
             }
         }
     }
@@ -83,7 +84,7 @@ class GameLogActivityTest {
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
                 val header = container.getChildAt(0) as TextView
-                assertTrue("Header should say Event 1", header.text.contains("Event 1"))
+                assertTrue("Header should say Turn 1", header.text.contains("Turn 1"))
             }
         }
     }
@@ -98,13 +99,13 @@ class GameLogActivityTest {
                 val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
                 assertTrue(container.childCount > 0)
                 val header = container.getChildAt(0) as TextView
-                assertTrue(header.text.contains("Infection"))
+                assertTrue(header.text.contains("Turn 1"))
             }
         }
     }
 
     @Test
-    fun multipleEventsAreNumberedSequentially() {
+    fun drawAndInfectFromSamePlayerShareOneTurnHeader() {
         val afterDraw = stateAfterDraw()
         val afterInfect = stateAfterInfect(afterDraw)
         assertEquals(2, afterInfect.eventLog.size)
@@ -116,8 +117,34 @@ class GameLogActivityTest {
                     .map { container.getChildAt(it) }
                     .filterIsInstance<TextView>()
                     .map { it.text.toString() }
-                assertTrue(headers.any { it.contains("Event 1") })
-                assertTrue(headers.any { it.contains("Event 2") })
+                // The draw and the infection that follows it belong to the same player's
+                // turn, so they should be grouped under a single "Turn 1" header rather
+                // than being numbered as two separate events.
+                assertEquals(1, headers.count { it.contains("Turn 1") })
+                assertTrue(headers.none { it.contains("Turn 2") })
+            }
+        }
+    }
+
+    @Test
+    fun secondPlayersTurnGetsItsOwnHeader() {
+        // Simulate a full round: player 0 draws + infects, then player 1 draws.
+        val afterFirstDraw = stateAfterDraw()
+        val afterFirstInfect = stateAfterInfect(afterFirstDraw)
+        val afterSecondDraw = (afterFirstInfect.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult)
+            .newGameState
+        assertEquals(3, afterSecondDraw.eventLog.size)
+
+        ActivityScenario.launch<GameLogActivity>(intentFor(afterSecondDraw)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
+                val headers = (0 until container.childCount)
+                    .map { container.getChildAt(it) }
+                    .filterIsInstance<TextView>()
+                    .map { it.text.toString() }
+                assertTrue(headers.any { it.contains("Turn 1") && it.contains("Medic") })
+                assertTrue(headers.any { it.contains("Turn 2") && it.contains("Scientist") })
             }
         }
     }
@@ -130,7 +157,8 @@ class GameLogActivityTest {
         val city = cities[0]
         val event = GameEvent.DrawPlayerCardsEvent(
             cardsDrawn = listOf(epidemic, CityPlayerCard(cities[1])),
-            epidemicsAndInfectedCities = listOf(epidemic to city)
+            epidemicsAndInfectedCities = listOf(epidemic to city),
+            player = Player(Role("Medic"))
         )
         val state = makeState(eventLog = listOf(event))
         ActivityScenario.launch<GameLogActivity>(intentFor(state)).use { scenario ->
