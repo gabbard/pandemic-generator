@@ -178,6 +178,34 @@ class RuleSetTest {
         assertTrue(BUILT_IN_RULE_SETS.contains(NATIONAL_CHAMPIONSHIP))
     }
 
+    // ── turn order across a full game (regression test for #55) ─────────────
+
+    @Test
+    fun curPlayerAlternatesCorrectlyAcrossTurnsIncludingAnEpidemic() {
+        val rng = Random(713)
+        var state = NATIONAL_CHAMPIONSHIP_RULES.setupGame(rng).trackableState
+        var sawEpidemic = false
+
+        repeat(6) { turn ->
+            assertEquals("wrong current player before turn $turn", turn % 2, state.curPlayer)
+
+            val drawResult = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                    as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
+            if (drawResult.epidemicsAndInfectedCities.isNotEmpty()) {
+                sawEpidemic = true
+            }
+            state = drawResult.newGameState
+            // still the same player's turn until they finish infecting
+            assertEquals("curPlayer changed during draw on turn $turn", turn % 2, state.curPlayer)
+
+            state = (state.executeTransition(Transition.INFECT, rng)
+                    as TrackableState.TransitionResult.Success).newGameState
+            assertEquals("curPlayer did not advance after turn $turn", (turn + 1) % 2, state.curPlayer)
+        }
+
+        assertTrue("test seed should have produced an epidemic to exercise the regression", sawEpidemic)
+    }
+
     // ── chooseDistinct ────────────────────────────────────────────────────────
 
     @Test

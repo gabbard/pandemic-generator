@@ -255,6 +255,60 @@ class TrackableStateTest {
         assertTrue(result is TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult)
     }
 
+    // ── turn order (curPlayer) ───────────────────────────────────────────────
+
+    @Test
+    fun drawPlayerCardsDoesNotAdvanceCurPlayer() {
+        val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
+        assertEquals(0, result.newGameState.curPlayer)
+    }
+
+    @Test
+    fun infectAdvancesCurPlayerToNextPlayer() {
+        val state = makeState(lastTransition = Transition.DRAW_PLAYER_CARDS)
+        val result = state.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
+        assertEquals(1, result.newGameState.curPlayer)
+    }
+
+    @Test
+    fun infectWrapsCurPlayerAroundToFirstPlayer() {
+        val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val afterDraw = (state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(0, afterDraw.curPlayer)
+        val afterInfect = (afterDraw.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(1, afterInfect.curPlayer)
+
+        val afterDraw2 = (afterInfect.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(1, afterDraw2.curPlayer)
+        val afterInfect2 = (afterDraw2.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(0, afterInfect2.curPlayer)
+    }
+
+    @Test
+    fun curPlayerKeepsAlternatingAcrossAnEpidemic() {
+        // Regression test for #55: turn order was lost after an epidemic was drawn.
+        val epidemic = NamedEpidemic("Test Epidemic")
+        val cityCards = listOf(epidemic) + ALL_CITIES.take(4).map { CityPlayerCard(it) }
+        var state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+
+        // Turn 1 (player 0): draw (triggers the epidemic), then infect.
+        state = (state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(0, state.curPlayer)
+        state = (state.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        assertEquals(1, state.curPlayer)
+    }
+
     @Test
     fun epidemicShufflesDiscardOntoTopOfDeck() {
         val epidemic = NamedEpidemic("Test Epidemic")
