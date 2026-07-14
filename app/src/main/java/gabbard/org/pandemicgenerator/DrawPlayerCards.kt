@@ -6,6 +6,7 @@ import android.view.View
 import gabbard.org.pandemicgenerator.databinding.ActivityDrawPlayerCardsBinding
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
+import org.gabbard.pandemicgenerator.UntrackableState
 import java.util.*
 
 class DrawPlayerCards : GameActivity() {
@@ -13,12 +14,14 @@ class DrawPlayerCards : GameActivity() {
     private var gameState: TrackableState? = null
     private var rng: Random? = null
     private var seed: Long = 0
+    private var initialState: UntrackableState? = null
 
     companion object {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
         const val SEED = "seed"
         const val TURN_DURATION = "turn_duration"
+        const val INITIAL_STATE = "initial_state"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +33,8 @@ class DrawPlayerCards : GameActivity() {
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(DrawPlayerCards.RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
+        @Suppress("DEPRECATION")
+        initialState = intent.getSerializableExtra(INITIAL_STATE) as? UntrackableState
         binding.seedDisplay.text = "Seed: $seed"
         binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
@@ -56,6 +61,7 @@ class DrawPlayerCards : GameActivity() {
 
     override fun gameStateForLog() = gameState
     override fun seedForLog() = seed
+    override fun initialStateForLog() = initialState
 
     fun onProceedToInfectionPhase(@Suppress("UNUSED_PARAMETER") view: View) {
         val infectionIntent = Intent(this, InfectionActivity::class.java)
@@ -63,6 +69,7 @@ class DrawPlayerCards : GameActivity() {
         infectionIntent.putExtra(InfectionActivity.RANDOM_SOURCE, rng!!)
         infectionIntent.putExtra(InfectionActivity.SEED, seed)
         infectionIntent.putExtra(InfectionActivity.TURN_DURATION, intent.getIntExtra(TURN_DURATION, TurnTimer.NO_TIMER))
+        initialState?.let { infectionIntent.putExtra(InfectionActivity.INITIAL_STATE, it) }
         startActivity(infectionIntent)
     }
 }

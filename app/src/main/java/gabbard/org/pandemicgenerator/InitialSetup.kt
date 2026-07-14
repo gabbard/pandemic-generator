@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import gabbard.org.pandemicgenerator.databinding.ActivityInitialSetupBinding
 import org.gabbard.pandemicgenerator.GameRules
+import org.gabbard.pandemicgenerator.UntrackableState
 import java.util.*
 
 
@@ -13,6 +14,7 @@ class InitialSetup : GameActivity() {
     private var gameRules: GameRules? = null
     private var rng: Random? = null
     private var seed: Long = 0
+    private var initialState: UntrackableState? = null
 
     companion object {
         const val GAME_RULES = "game_rules"
@@ -33,6 +35,7 @@ class InitialSetup : GameActivity() {
 
         val fullGameState = gameRules!!.setupGame(rng!!)
         val trackableState = fullGameState.trackableState
+        initialState = fullGameState.untrackableState
 
         val players = trackableState.players
         val hands = fullGameState.untrackableState.hands
@@ -68,6 +71,7 @@ class InitialSetup : GameActivity() {
             putExtra(TurnTimer.RANDOM_SOURCE, rng)
             putExtra(TurnTimer.SEED, seed)
             putExtra(TurnTimer.TURN_DURATION, gameRules!!.turnDurationSeconds ?: -1)
+            putExtra(TurnTimer.INITIAL_STATE, initialState)
         })
     }
 }

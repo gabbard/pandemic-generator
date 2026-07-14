@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Chronometer
 import gabbard.org.pandemicgenerator.databinding.ActivityTurnTimerBinding
 import org.gabbard.pandemicgenerator.TrackableState
+import org.gabbard.pandemicgenerator.UntrackableState
 import java.util.*
 
 
@@ -18,6 +19,7 @@ class TurnTimer : GameActivity() {
     private var rng: Random? = null
     private var seed: Long = 0
     private var timerExpired = false
+    private var initialState: UntrackableState? = null
 
     companion object {
         const val GAME_STATE = "game_state"
@@ -25,6 +27,7 @@ class TurnTimer : GameActivity() {
         const val SEED = "seed"
         const val TURN_DURATION = "turn_duration"
         const val NO_TIMER = -1
+        const val INITIAL_STATE = "initial_state"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +39,8 @@ class TurnTimer : GameActivity() {
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
+        @Suppress("DEPRECATION")
+        initialState = intent.getSerializableExtra(INITIAL_STATE) as? UntrackableState
         binding.seedDisplay.text = "Seed: $seed"
         binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
@@ -80,6 +85,7 @@ class TurnTimer : GameActivity() {
 
     override fun gameStateForLog() = gameState
     override fun seedForLog() = seed
+    override fun initialStateForLog() = initialState
 
     fun onDrawPlayerCards(@Suppress("UNUSED_PARAMETER") view: View) {
         val drawPlayerCardsIntent = Intent(this, DrawPlayerCards::class.java)
@@ -87,6 +93,7 @@ class TurnTimer : GameActivity() {
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.RANDOM_SOURCE, rng!!)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.SEED, seed)
         drawPlayerCardsIntent.putExtra(DrawPlayerCards.TURN_DURATION, intent.getIntExtra(TURN_DURATION, NO_TIMER))
+        initialState?.let { drawPlayerCardsIntent.putExtra(DrawPlayerCards.INITIAL_STATE, it) }
         startActivity(drawPlayerCardsIntent)
     }
 }
