@@ -1,5 +1,6 @@
 package gabbard.org.pandemicgenerator
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -29,10 +30,35 @@ class EnterRandomSeed : AppCompatActivity() {
             val seed = abs(Random().nextLong()) % 1_000_000L
             binding.startGame.setText(seed.toString())
         }
+
+        binding.recentSeedsButton.setOnClickListener {
+            showRecentSeedsDialog()
+        }
+    }
+
+    private fun showRecentSeedsDialog() {
+        val recentSeeds = SeedHistory.recentSeeds(this)
+        if (recentSeeds.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("Recent Seeds")
+                .setMessage("No recent seeds yet.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+
+        val items = recentSeeds.map { it.toString() }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Recent Seeds")
+            .setItems(items) { _, which ->
+                binding.startGame.setText(items[which])
+            }
+            .show()
     }
 
     fun startGame(@Suppress("UNUSED_PARAMETER") view: View) {
         val seed = binding.startGame.text.toString().toLong()
+        SeedHistory.record(this, seed)
         startActivity(Intent(this, InitialSetup::class.java).apply {
             putExtra(InitialSetup.GAME_RULES, gameRules)
             putExtra(InitialSetup.RANDOM_SOURCE, Random(seed))
