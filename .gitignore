@@ -29,6 +29,9 @@ proguard/
 # Android Studio Navigation editor temp files
 .navigation/
 
+# Claude Code agent worktrees
+.claude/worktrees/
+
 # Android Studio captures folder
 captures/
 
