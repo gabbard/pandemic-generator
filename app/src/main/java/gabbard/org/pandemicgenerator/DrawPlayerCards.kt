@@ -6,6 +6,8 @@ import android.view.View
 import gabbard.org.pandemicgenerator.databinding.ActivityDrawPlayerCardsBinding
 import org.gabbard.pandemicgenerator.Epidemic
 import org.gabbard.pandemicgenerator.City
+import org.gabbard.pandemicgenerator.GameEvent
+import org.gabbard.pandemicgenerator.NamedEpidemic
 import org.gabbard.pandemicgenerator.PlayerCard
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
@@ -21,6 +23,7 @@ class DrawPlayerCards : GameActivity() {
     private var cardsDrawn: List<PlayerCard> = emptyList()
     private var epidemicsAndInfectedCities: List<Pair<Epidemic, City>> = emptyList()
     private var initialState: UntrackableState? = null
+    private var firstVirulentStrainEpidemicIndex: Int = -1
 
     companion object {
         const val GAME_STATE = "game_state"
@@ -32,6 +35,8 @@ class DrawPlayerCards : GameActivity() {
         private const val RESULT_GAME_STATE = "result_game_state"
         private const val RESULT_CARDS_DRAWN = "result_cards_drawn"
         private const val RESULT_EPIDEMICS_AND_INFECTED_CITIES = "result_epidemics_and_infected_cities"
+        private const val RESULT_FIRST_VIRULENT_STRAIN_EPIDEMIC_INDEX =
+            "result_first_virulent_strain_epidemic_index"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,9 +65,18 @@ class DrawPlayerCards : GameActivity() {
                     return
                 }
                 is TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult -> {
+                    val virulentStrainAlreadyDetermined = gameState!!.eventLog.any { event ->
+                        event is GameEvent.DrawPlayerCardsEvent &&
+                            event.epidemicsAndInfectedCities.any { it.first is NamedEpidemic }
+                    }
                     gameState = result.newGameState
                     cardsDrawn = result.cardsDrawn
                     epidemicsAndInfectedCities = result.epidemicsAndInfectedCities
+                    firstVirulentStrainEpidemicIndex = if (virulentStrainAlreadyDetermined) {
+                        -1
+                    } else {
+                        epidemicsAndInfectedCities.indexOfFirst { it.first is NamedEpidemic }
+                    }
                 }
                 else -> error("Unexpected result type for DRAW_PLAYER_CARDS: $result")
             }
@@ -80,15 +94,20 @@ class DrawPlayerCards : GameActivity() {
             epidemicsAndInfectedCities = savedInstanceState.getSerializable(
                 RESULT_EPIDEMICS_AND_INFECTED_CITIES
             ) as List<Pair<Epidemic, City>>
+            firstVirulentStrainEpidemicIndex =
+                savedInstanceState.getInt(RESULT_FIRST_VIRULENT_STRAIN_EPIDEMIC_INDEX)
         }
 
         val container = binding.cardsContainer
         container.addSectionHeader("Cards drawn:")
         cardsDrawn.forEach { container.addPlayerCardRow(it) }
 
-        for ((epidemic, city) in epidemicsAndInfectedCities) {
+        epidemicsAndInfectedCities.forEachIndexed { index, (epidemic, city) ->
             container.addSectionHeader("Epidemic: ${epidemic.userString}")
             container.addCityRow(city, "infected from bottom")
+            if (index == firstVirulentStrainEpidemicIndex) {
+                container.addFirstEpidemicVirulentStrainExplanation(seed)
+            }
         }
     }
 
@@ -99,6 +118,7 @@ class DrawPlayerCards : GameActivity() {
             outState.putSerializable(RESULT_GAME_STATE, gameState)
             outState.putSerializable(RESULT_CARDS_DRAWN, ArrayList(cardsDrawn))
             outState.putSerializable(RESULT_EPIDEMICS_AND_INFECTED_CITIES, ArrayList(epidemicsAndInfectedCities))
+            outState.putInt(RESULT_FIRST_VIRULENT_STRAIN_EPIDEMIC_INDEX, firstVirulentStrainEpidemicIndex)
         }
     }
 

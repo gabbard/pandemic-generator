@@ -19,6 +19,7 @@ import org.gabbard.pandemicgenerator.NamedEpidemic
 import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.PlayerCard
 import org.gabbard.pandemicgenerator.Role
+import org.gabbard.pandemicgenerator.SimpleEpidemic
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import org.gabbard.pandemicgenerator.UntrackableState
@@ -173,6 +174,71 @@ class GameLogActivityTest {
                     .filterIsInstance<TextView>()
                     .map { it.text.toString() }
                 assertTrue("Epidemic section should appear in log", headers.any { it.contains("Epidemic") })
+            }
+        }
+    }
+
+    @Test
+    fun drawPlayerCardsEventWithNamedEpidemicShowsVirulentStrainExplanation() {
+        val epidemic = NamedEpidemic("Virulent")
+        val city = cities[0]
+        val event = GameEvent.DrawPlayerCardsEvent(
+            cardsDrawn = listOf(epidemic, CityPlayerCard(cities[1])),
+            epidemicsAndInfectedCities = listOf(epidemic to city),
+            player = Player(Role("Medic"))
+        )
+        val state = makeState(eventLog = listOf(event))
+        ActivityScenario.launch<GameLogActivity>(intentFor(state)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertTrue(
+                    "Virulent Strain explanation should appear",
+                    headers.any { it.contains("Virulent Strain determination") }
+                )
+            }
+        }
+    }
+
+    @Test
+    fun drawPlayerCardsEventWithSimpleEpidemicDoesNotShowVirulentStrainExplanation() {
+        val epidemic = SimpleEpidemic()
+        val city = cities[0]
+        val event = GameEvent.DrawPlayerCardsEvent(
+            cardsDrawn = listOf(epidemic, CityPlayerCard(cities[1])),
+            epidemicsAndInfectedCities = listOf(epidemic to city),
+            player = Player(Role("Medic"))
+        )
+        val state = makeState(eventLog = listOf(event))
+        ActivityScenario.launch<GameLogActivity>(intentFor(state)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertTrue(
+                    "Virulent Strain explanation should not appear for a Simple epidemic",
+                    headers.none { it.contains("Virulent Strain determination") }
+                )
+            }
+        }
+    }
+
+    @Test
+    fun virulentStrainExplanationOnlyShownOnceAcrossMultipleNamedEpidemics() {
+        val firstEpidemic = NamedEpidemic("First")
+        val secondEpidemic = NamedEpidemic("Second")
+        val firstEvent = GameEvent.DrawPlayerCardsEvent(
+            cardsDrawn = listOf(firstEpidemic),
+            epidemicsAndInfectedCities = listOf(firstEpidemic to cities[0]),
+            player = Player(Role("Medic"))
+        )
+        val secondEvent = GameEvent.DrawPlayerCardsEvent(
+            cardsDrawn = listOf(secondEpidemic),
+            epidemicsAndInfectedCities = listOf(secondEpidemic to cities[1]),
+            player = Player(Role("Scientist"))
+        )
+        val state = makeState(eventLog = listOf(firstEvent, secondEvent))
+        ActivityScenario.launch<GameLogActivity>(intentFor(state)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertEquals(1, headers.count { it.contains("Virulent Strain determination") })
             }
         }
     }
