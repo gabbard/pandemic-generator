@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.View
 import gabbard.org.pandemicgenerator.databinding.ActivityInitialSetupBinding
 import org.gabbard.pandemicgenerator.GameRules
+import org.gabbard.pandemicgenerator.GameState
+import org.gabbard.pandemicgenerator.TrackableState
 import java.util.*
 
 
@@ -13,11 +15,14 @@ class InitialSetup : GameActivity() {
     private var gameRules: GameRules? = null
     private var rng: Random? = null
     private var seed: Long = 0
+    private var gameState: TrackableState? = null
+    private var fullGameState: GameState? = null
 
     companion object {
         const val GAME_RULES = "game_rules"
         const val RANDOM_SOURCE = "random_source"
         const val SEED = "seed"
+        private const val FULL_GAME_STATE = "full_game_state"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,11 +36,19 @@ class InitialSetup : GameActivity() {
         seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
 
-        val fullGameState = gameRules!!.setupGame(rng!!)
-        val trackableState = fullGameState.trackableState
+        // setupGame() mutates rng and must only run once per seed; on recreation
+        // (rotation, or process death while the activity is still in the back
+        // stack) restore the previously computed result instead of redrawing it.
+        @Suppress("DEPRECATION")
+        fullGameState = if (savedInstanceState == null) {
+            gameRules!!.setupGame(rng!!)
+        } else {
+            savedInstanceState.getSerializable(FULL_GAME_STATE) as GameState
+        }
+        val trackableState = fullGameState!!.trackableState
 
         val players = trackableState.players
-        val hands = fullGameState.untrackableState.hands
+        val hands = fullGameState!!.untrackableState.hands
         listOf(binding.player1Cards to players[0]).plus(
             if (players.size > 1) listOf(binding.player2Cards to players[1]) else emptyList()
         ).forEach { (container, player) ->
@@ -47,7 +60,7 @@ class InitialSetup : GameActivity() {
         if (players.size < 2) binding.player2Cards.removeAllViews()
 
         val boardCities = binding.boardCities
-        val cityStates = fullGameState.untrackableState.board.cityStates
+        val cityStates = fullGameState!!.untrackableState.board.cityStates
         for (cubes in 3 downTo 1) {
             val cities = cityStates.filterValues { it.infections.values.sum() == cubes }.keys
             if (cities.isNotEmpty()) {
@@ -60,7 +73,10 @@ class InitialSetup : GameActivity() {
         this.gameState = trackableState
     }
 
-    private var gameState: org.gabbard.pandemicgenerator.TrackableState? = null
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable(FULL_GAME_STATE, fullGameState)
+    }
 
     fun readyToPlay(@Suppress("UNUSED_PARAMETER") view: View) {
         startActivity(Intent(this, TurnTimer::class.java).apply {

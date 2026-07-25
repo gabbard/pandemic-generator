@@ -1,6 +1,8 @@
 package gabbard.org.pandemicgenerator
 
 import android.content.Intent
+import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
@@ -16,6 +18,12 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.util.Random
+
+private fun collectText(view: View): List<String> = when (view) {
+    is TextView -> listOf(view.text.toString())
+    is ViewGroup -> (0 until view.childCount).flatMap { collectText(view.getChildAt(it)) }
+    else -> emptyList()
+}
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -108,5 +116,31 @@ class InitialSetupTest {
                 assertEquals(42L, started.getLongExtra(TurnTimer.SEED, -1L))
             }
         }
+    }
+
+    @Test
+    fun rotatingScreenDisplaysSameGameForSameSeed() {
+        // Regression test for the bug where InitialSetup called setupGame(rng) fresh on
+        // every onCreate(), so a rotation (which redelivers the same Intent, and with it
+        // the same, now-mutated Random instance) produced a completely different game.
+        var before: List<String> = emptyList()
+        var after: List<String> = emptyList()
+        ActivityScenario.launch<InitialSetup>(intent()).use { scenario ->
+            scenario.onActivity { activity ->
+                before = collectText(activity.findViewById(R.id.seedDisplay)) +
+                    collectText(activity.findViewById(R.id.player1Cards)) +
+                    collectText(activity.findViewById(R.id.player2Cards)) +
+                    collectText(activity.findViewById(R.id.boardCities))
+            }
+            scenario.recreate()
+            scenario.onActivity { activity ->
+                after = collectText(activity.findViewById(R.id.seedDisplay)) +
+                    collectText(activity.findViewById(R.id.player1Cards)) +
+                    collectText(activity.findViewById(R.id.player2Cards)) +
+                    collectText(activity.findViewById(R.id.boardCities))
+            }
+        }
+        assertEquals(before, after)
+        assertTrue("Sanity check: expected some content to compare", before.isNotEmpty())
     }
 }
