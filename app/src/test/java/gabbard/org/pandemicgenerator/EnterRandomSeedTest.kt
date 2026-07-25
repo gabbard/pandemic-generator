@@ -1,10 +1,12 @@
 package gabbard.org.pandemicgenerator
 
+import android.content.Context
 import android.content.Intent
 import android.widget.EditText
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.gabbard.pandemicgenerator.NATIONAL_CHAMPIONSHIP_RULES
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -13,10 +15,18 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowAlertDialog
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class EnterRandomSeedTest {
+
+    private val context: Context = ApplicationProvider.getApplicationContext()
+
+    @After
+    fun tearDown() {
+        SeedHistory.clear(context)
+    }
 
     private fun intent(): Intent =
         Intent(ApplicationProvider.getApplicationContext(), EnterRandomSeed::class.java).apply {
@@ -101,6 +111,57 @@ class EnterRandomSeedTest {
                 @Suppress("DEPRECATION")
                 val rules = started.getSerializableExtra(InitialSetup.GAME_RULES)
                 assertEquals(NATIONAL_CHAMPIONSHIP_RULES, rules)
+            }
+        }
+    }
+
+    // ── recent seeds ───────────────────────────────────────────────────────────
+
+    @Test
+    fun startGameRecordsSeedInHistory() {
+        ActivityScenario.launch<EnterRandomSeed>(intent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<EditText>(R.id.startGame).setText("54321")
+                activity.findViewById<android.view.View>(R.id.button2).performClick()
+            }
+        }
+        assertEquals(listOf(54321L), SeedHistory.recentSeeds(context))
+    }
+
+    @Test
+    fun recentSeedsButtonShowsEmptyStateWhenNoHistory() {
+        ActivityScenario.launch<EnterRandomSeed>(intent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<android.view.View>(R.id.recentSeedsButton).performClick()
+                val dialog = ShadowAlertDialog.getLatestAlertDialog()
+                assertEquals("No recent seeds yet.", shadowOf(dialog).message)
+            }
+        }
+    }
+
+    @Test
+    fun recentSeedsButtonShowsHistoryWhenPresent() {
+        SeedHistory.record(context, 111L)
+        SeedHistory.record(context, 222L)
+        ActivityScenario.launch<EnterRandomSeed>(intent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<android.view.View>(R.id.recentSeedsButton).performClick()
+                val dialog = ShadowAlertDialog.getLatestAlertDialog()
+                val items = shadowOf(dialog).items.map { it.toString() }
+                assertEquals(listOf("222", "111"), items)
+            }
+        }
+    }
+
+    @Test
+    fun selectingRecentSeedPopulatesSeedField() {
+        SeedHistory.record(context, 777L)
+        ActivityScenario.launch<EnterRandomSeed>(intent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<android.view.View>(R.id.recentSeedsButton).performClick()
+                shadowOf(ShadowAlertDialog.getLatestAlertDialog()).clickOnItem(0)
+                val text = activity.findViewById<EditText>(R.id.startGame).text.toString()
+                assertEquals("777", text)
             }
         }
     }
