@@ -389,4 +389,136 @@ class EditRuleSetActivityTest {
             }
         }
     }
+
+    // ── Turn timer ────────────────────────────────────────────────────────────
+
+    @Test
+    fun newRuleSetHasTimerUncheckedAndFieldHiddenByDefault() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                assertFalse(activity.findViewById<CheckBox>(R.id.use_timer).isChecked)
+                assertEquals(
+                    View.GONE,
+                    activity.findViewById<View>(R.id.turn_duration_seconds).visibility
+                )
+            }
+        }
+    }
+
+    @Test
+    fun checkingUseTimerRevealsDurationField() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<CheckBox>(R.id.use_timer).isChecked = true
+                assertEquals(
+                    View.VISIBLE,
+                    activity.findViewById<View>(R.id.turn_duration_seconds).visibility
+                )
+            }
+        }
+    }
+
+    @Test
+    fun saveWithoutTimerLeavesTurnDurationSecondsNull() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<EditText>(R.id.ruleset_name).setText("No Timer Rule Set")
+                checkAllRoles(activity)
+                activity.findViewById<EditText>(R.id.num_events_to_use).setText("0")
+                activity.findViewById<View>(R.id.save_button).performClick()
+                val saved = RuleSetRepository.load(context)
+                assertEquals(1, saved.size)
+                assertEquals(null, saved[0].turnDurationSeconds)
+            }
+        }
+    }
+
+    @Test
+    fun saveWithTimerCheckedAndValidDurationPersistsDuration() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<EditText>(R.id.ruleset_name).setText("Timed Rule Set")
+                activity.findViewById<CheckBox>(R.id.use_timer).isChecked = true
+                activity.findViewById<EditText>(R.id.turn_duration_seconds).setText("90")
+                checkAllRoles(activity)
+                activity.findViewById<EditText>(R.id.num_events_to_use).setText("0")
+                activity.findViewById<View>(R.id.save_button).performClick()
+                assertTrue("Activity should finish after a valid timed save", activity.isFinishing)
+                val saved = RuleSetRepository.load(context)
+                assertEquals(1, saved.size)
+                assertEquals(90, saved[0].turnDurationSeconds)
+            }
+        }
+    }
+
+    @Test
+    fun saveWithTimerCheckedAndEmptyDurationDoesNotSave() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<EditText>(R.id.ruleset_name).setText("Invalid Timer Rule Set")
+                activity.findViewById<CheckBox>(R.id.use_timer).isChecked = true
+                activity.findViewById<EditText>(R.id.turn_duration_seconds).setText("")
+                checkAllRoles(activity)
+                activity.findViewById<EditText>(R.id.num_events_to_use).setText("0")
+                activity.findViewById<View>(R.id.save_button).performClick()
+                assertFalse(
+                    "Activity should not finish when timer is checked with an empty duration",
+                    activity.isFinishing
+                )
+            }
+        }
+    }
+
+    @Test
+    fun saveWithTimerCheckedAndNonPositiveDurationDoesNotSave() {
+        ActivityScenario.launch<EditRuleSetActivity>(newIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<EditText>(R.id.ruleset_name).setText("Zero Timer Rule Set")
+                activity.findViewById<CheckBox>(R.id.use_timer).isChecked = true
+                activity.findViewById<EditText>(R.id.turn_duration_seconds).setText("0")
+                checkAllRoles(activity)
+                activity.findViewById<EditText>(R.id.num_events_to_use).setText("0")
+                activity.findViewById<View>(R.id.save_button).performClick()
+                assertFalse(
+                    "Activity should not finish when timer duration is not positive",
+                    activity.isFinishing
+                )
+            }
+        }
+    }
+
+    @Test
+    fun existingRuleSetWithTimerPopulatesCheckboxAndDuration() {
+        // NATIONAL_CHAMPIONSHIP has turnDurationSeconds = 75
+        ActivityScenario.launch<EditRuleSetActivity>(editIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                assertTrue(
+                    "use_timer should be checked for a rule set with a non-null turnDurationSeconds",
+                    activity.findViewById<CheckBox>(R.id.use_timer).isChecked
+                )
+                assertEquals(
+                    "75",
+                    activity.findViewById<EditText>(R.id.turn_duration_seconds).text.toString()
+                )
+                assertEquals(
+                    View.VISIBLE,
+                    activity.findViewById<View>(R.id.turn_duration_seconds).visibility
+                )
+            }
+        }
+    }
+
+    @Test
+    fun existingRuleSetWithoutTimerLeavesCheckboxUnchecked() {
+        val ruleSet = NATIONAL_CHAMPIONSHIP.copy(turnDurationSeconds = null)
+        ActivityScenario.launch<EditRuleSetActivity>(editIntent(ruleSet = ruleSet)).use { scenario ->
+            scenario.onActivity { activity ->
+                assertFalse(activity.findViewById<CheckBox>(R.id.use_timer).isChecked)
+                assertEquals(
+                    View.GONE,
+                    activity.findViewById<View>(R.id.turn_duration_seconds).visibility
+                )
+            }
+        }
+    }
 }
