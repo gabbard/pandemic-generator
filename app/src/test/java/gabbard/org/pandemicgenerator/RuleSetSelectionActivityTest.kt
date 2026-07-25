@@ -102,8 +102,8 @@ class RuleSetSelectionActivityTest {
         ActivityScenario.launch(RuleSetSelectionActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.rule_sets_container)
-                // 2 built-in + 1 custom
-                assertEquals(3, container.childCount)
+                // built-in rows + 1 custom
+                assertEquals(BUILT_IN_RULE_SETS.size + 1, container.childCount)
             }
         }
     }
@@ -114,8 +114,8 @@ class RuleSetSelectionActivityTest {
         ActivityScenario.launch(RuleSetSelectionActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.rule_sets_container)
-                // Custom row is at index 2 (after the 2 built-in rows)
-                val customRow = container.getChildAt(2) as LinearLayout
+                // Custom row is after the built-in rows
+                val customRow = container.getChildAt(BUILT_IN_RULE_SETS.size) as LinearLayout
                 val buttonTexts = (0 until customRow.childCount)
                     .map { customRow.getChildAt(it) }
                     .filterIsInstance<Button>()
@@ -134,7 +134,7 @@ class RuleSetSelectionActivityTest {
         ActivityScenario.launch(RuleSetSelectionActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.rule_sets_container)
-                val customRow = container.getChildAt(2) as LinearLayout
+                val customRow = container.getChildAt(BUILT_IN_RULE_SETS.size) as LinearLayout
                 // Children: TextView(0), Select(1), Edit(2), Delete(3)
                 val editButton = customRow.getChildAt(2) as Button
                 editButton.performClick()
@@ -151,7 +151,7 @@ class RuleSetSelectionActivityTest {
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.rule_sets_container)
                 val countBefore = container.childCount
-                val customRow = container.getChildAt(2) as LinearLayout
+                val customRow = container.getChildAt(BUILT_IN_RULE_SETS.size) as LinearLayout
                 // Children: TextView(0), Select(1), Edit(2), Delete(3)
                 val deleteButton = customRow.getChildAt(3) as Button
                 deleteButton.performClick()
@@ -168,7 +168,7 @@ class RuleSetSelectionActivityTest {
         ActivityScenario.launch(RuleSetSelectionActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.rule_sets_container)
-                val customRow = container.getChildAt(2) as LinearLayout
+                val customRow = container.getChildAt(BUILT_IN_RULE_SETS.size) as LinearLayout
                 // Children: TextView (index 0), Button "Select" (index 1), Button "Edit" (index 2), Button "Delete" (index 3)
                 val selectButton = customRow.getChildAt(1) as Button
                 selectButton.performClick()
