@@ -40,12 +40,6 @@ class EditRuleSetActivity : AppCompatActivity() {
                 if (checkedId == R.id.epidemic_named) android.view.View.VISIBLE else android.view.View.GONE
         }
 
-        // Toggle turn duration field visibility with the "Use a timer" checkbox
-        binding.useTimer.setOnCheckedChangeListener { _, isChecked ->
-            binding.turnDurationSeconds.visibility =
-                if (isChecked) android.view.View.VISIBLE else android.view.View.GONE
-        }
-
         // Pre-populate event checkboxes, excluding events that require infection deck interaction
         val sortedEvents = MULTI_BOARD_COMPATIBLE_EVENTS.sortedBy { it.name }
         val eventCheckBoxes = mutableMapOf<EventCard, CheckBox>()
@@ -127,12 +121,6 @@ class EditRuleSetActivity : AppCompatActivity() {
 
         for ((role, cb) in roleCheckBoxes) {
             cb.isChecked = role in ruleSet.availableRoles
-        }
-
-        val turnDurationSeconds = ruleSet.turnDurationSeconds
-        if (turnDurationSeconds != null) {
-            binding.useTimer.isChecked = true
-            binding.turnDurationSeconds.setText(turnDurationSeconds.toString())
         }
     }
 
@@ -252,17 +240,6 @@ class EditRuleSetActivity : AppCompatActivity() {
             return null
         }
 
-        val turnDurationSeconds: Int? = if (binding.useTimer.isChecked) {
-            val duration = binding.turnDurationSeconds.text.toString().toIntOrNull()
-            if (duration == null || duration < 1) {
-                Toast.makeText(this, "Enter a valid turn duration in seconds", Toast.LENGTH_SHORT).show()
-                return null
-            }
-            duration
-        } else {
-            null
-        }
-
         return RuleSet(
             name = name,
             availableRoles = availableRoles,
@@ -270,8 +247,7 @@ class EditRuleSetActivity : AppCompatActivity() {
             availableEvents = availableEvents,
             numEventsToUse = numEventsToUse,
             availableDifficulties = difficulties,
-            allowedPlayerCounts = allowedPlayerCounts,
-            turnDurationSeconds = turnDurationSeconds
+            allowedPlayerCounts = allowedPlayerCounts
         )
     }
 
