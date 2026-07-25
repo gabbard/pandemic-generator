@@ -7,6 +7,7 @@ import gabbard.org.pandemicgenerator.databinding.ActivityGameLogBinding
 import org.gabbard.pandemicgenerator.GameEvent
 import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.TrackableState
+import org.gabbard.pandemicgenerator.UntrackableState
 import org.gabbard.pandemicgenerator.seededColorTiebreakOrder
 
 class GameLogActivity : AppCompatActivity() {
@@ -15,6 +16,7 @@ class GameLogActivity : AppCompatActivity() {
     companion object {
         const val GAME_STATE = "game_state"
         const val SEED = "seed"
+        const val INITIAL_STATE = "initial_state"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,8 +28,31 @@ class GameLogActivity : AppCompatActivity() {
         val gameState = intent.getSerializableExtra(GAME_STATE) as TrackableState
         val seed = intent.getLongExtra(SEED, 0)
         binding.seedDisplay.text = "Seed: $seed"
+        @Suppress("DEPRECATION")
+        val initialState = intent.getSerializableExtra(INITIAL_STATE) as? UntrackableState
 
         val container = binding.eventLogContainer
+
+        if (initialState != null) {
+            container.addSectionHeader("Initialization")
+            container.addSectionHeader("Seed: $seed")
+
+            gameState.players.forEach { player ->
+                container.addSectionHeader("${player.role.name} starting hand:")
+                initialState.hands[player]?.sortedBy { it.userString }
+                    ?.forEach { container.addPlayerCardRow(it) }
+            }
+
+            val cityStates = initialState.board.cityStates
+            for (cubes in 3 downTo 1) {
+                val cities = cityStates.filterValues { it.infections.values.sum() == cubes }.keys
+                if (cities.isNotEmpty()) {
+                    container.addSectionHeader("$cubes cube${if (cubes == 1) "" else "s"} (initial):")
+                    cities.sortedBy { it.name }.forEach { container.addCityRow(it) }
+                }
+            }
+        }
+
         val log = gameState.eventLog
         if (log.isEmpty()) {
             container.addSectionHeader("No events yet")

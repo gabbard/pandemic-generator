@@ -6,7 +6,10 @@ import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.gabbard.pandemicgenerator.ALL_CITIES
+import org.gabbard.pandemicgenerator.BoardState
 import org.gabbard.pandemicgenerator.CityPlayerCard
+import org.gabbard.pandemicgenerator.CityState
+import org.gabbard.pandemicgenerator.Color
 import org.gabbard.pandemicgenerator.Deck
 import org.gabbard.pandemicgenerator.Epidemic
 import org.gabbard.pandemicgenerator.GameEvent
@@ -18,6 +21,7 @@ import org.gabbard.pandemicgenerator.PlayerCard
 import org.gabbard.pandemicgenerator.Role
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
+import org.gabbard.pandemicgenerator.UntrackableState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -173,6 +177,74 @@ class GameLogActivityTest {
         }
     }
 
+    // ── Initialization section ──────────────────────────────────────────────────
+
+    @Test
+    fun initializationSectionOmittedWhenInitialStateMissing() {
+        // No INITIAL_STATE extra is set by intentFor() by default, so the log should
+        // look exactly like it did before this feature: just the "No events yet" header.
+        val state = makeState()
+        ActivityScenario.launch<GameLogActivity>(intentFor(state)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
+                assertEquals(1, container.childCount)
+            }
+        }
+    }
+
+    @Test
+    fun initializationSectionAppearsWhenInitialStateProvided() {
+        val state = makeState()
+        val initialState = makeInitialState(state.players)
+        ActivityScenario.launch<GameLogActivity>(intentFor(state, initialState = initialState)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertTrue("Initialization header should appear", headers.any { it.contains("Initialization") })
+            }
+        }
+    }
+
+    @Test
+    fun initializationSectionShowsStartingHandsForEachPlayer() {
+        val state = makeState()
+        val initialState = makeInitialState(state.players)
+        ActivityScenario.launch<GameLogActivity>(intentFor(state, initialState = initialState)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertTrue("Medic starting hand header should appear", headers.any { it.contains("Medic starting hand") })
+                assertTrue("Scientist starting hand header should appear", headers.any { it.contains("Scientist starting hand") })
+            }
+        }
+    }
+
+    @Test
+    fun initializationSectionShowsCubeGroupings() {
+        val state = makeState()
+        val initialState = makeInitialState(state.players)
+        ActivityScenario.launch<GameLogActivity>(intentFor(state, initialState = initialState)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertTrue("3 cube header should appear", headers.any { it.contains("3 cubes") })
+                assertTrue("2 cube header should appear", headers.any { it.contains("2 cubes") })
+                assertTrue("1 cube header should appear", headers.any { it.contains("1 cube") })
+            }
+        }
+    }
+
+    @Test
+    fun initializationSectionAppearsBeforeEventLog() {
+        val state = stateAfterDraw()
+        val initialState = makeInitialState(state.players)
+        ActivityScenario.launch<GameLogActivity>(intentFor(state, initialState = initialState)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                val initIndex = headers.indexOfFirst { it.contains("Initialization") }
+                val eventIndex = headers.indexOfFirst { it.contains("Turn 1") }
+                assertTrue("Initialization should come before the event log", initIndex in 0 until eventIndex)
+            }
+        }
+    }
+
     // ── close button ──────────────────────────────────────────────────────────
 
     @Test
@@ -187,11 +259,30 @@ class GameLogActivityTest {
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private fun intentFor(state: TrackableState, seed: Long = 42L): Intent =
+    private fun intentFor(state: TrackableState, seed: Long = 42L, initialState: UntrackableState? = null): Intent =
         Intent(ApplicationProvider.getApplicationContext(), GameLogActivity::class.java).apply {
             putExtra(GameLogActivity.GAME_STATE, state)
             putExtra(GameLogActivity.SEED, seed)
+            initialState?.let { putExtra(GameLogActivity.INITIAL_STATE, it) }
         }
+
+    private fun headerTexts(activity: GameLogActivity): List<String> {
+        val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
+        return (0 until container.childCount)
+            .map { container.getChildAt(it) }
+            .filterIsInstance<TextView>()
+            .map { it.text.toString() }
+    }
+
+    private fun makeInitialState(players: List<Player>): UntrackableState {
+        val hands = players.associateWith { cities.take(4).map { c -> CityPlayerCard(c) }.toSet() }
+        val cityStates = mapOf(
+            cities[10] to CityState(mapOf(Color.BLUE to 3)),
+            cities[11] to CityState(mapOf(Color.YELLOW to 2)),
+            cities[12] to CityState(mapOf(Color.BLACK to 1))
+        )
+        return UntrackableState(BoardState(cityStates), hands)
+    }
 
     private fun makeState(
         playerCards: List<PlayerCard> = cities.take(5).map { CityPlayerCard(it) },
