@@ -170,12 +170,59 @@ class RuleSetTest {
         assertEquals(6, rules.numEpidemicsToUse)
     }
 
+    // ── GENCON_2026 configuration ─────────────────────────────────────────────
+
+    @Test
+    fun genCon2026Allows2To4Players() {
+        assertEquals(listOf(2, 3, 4), GENCON_2026.allowedPlayerCounts)
+    }
+
+    @Test
+    fun genCon2026TurnDurationIs75Seconds() {
+        assertEquals(75, GENCON_2026.turnDurationSeconds)
+    }
+
+    @Test
+    fun genCon2026UsesSimpleEpidemics() {
+        assertTrue(GENCON_2026.availableEpidemics.all { it is SimpleEpidemic })
+    }
+
+    @Test
+    fun genCon2026IntroductoryHasFourEpidemics() {
+        val rules = GENCON_2026.buildGameRules(GameOptions(2, Difficulty("Introductory", 4)))
+        assertEquals(4, rules.numEpidemicsToUse)
+    }
+
+    @Test
+    fun genCon2026NormalHasFiveEpidemics() {
+        val rules = GENCON_2026.buildGameRules(GameOptions(2, Difficulty("Normal", 5)))
+        assertEquals(5, rules.numEpidemicsToUse)
+    }
+
+    @Test
+    fun genCon2026HeroicHasSixEpidemics() {
+        val rules = GENCON_2026.buildGameRules(GameOptions(2, Difficulty("Heroic", 6)))
+        assertEquals(6, rules.numEpidemicsToUse)
+    }
+
+    @Test
+    fun genCon2026UsesAllCurrentlyAvailableRoles() {
+        assertEquals(ALL_ROLES - INFECTION_DECK_INTERACTION_ROLES, GENCON_2026.availableRoles)
+    }
+
+    @Test
+    fun genCon2026UsesAllCurrentlyAvailableEvents() {
+        assertEquals(ALL_KNOWN_EVENTS, GENCON_2026.availableEvents)
+        assertEquals(ALL_KNOWN_EVENTS.size, GENCON_2026.numEventsToUse)
+    }
+
     // ── BUILT_IN_RULE_SETS ────────────────────────────────────────────────────
 
     @Test
-    fun builtInRuleSetsContainsBothVariants() {
+    fun builtInRuleSetsContainsAllVariants() {
         assertTrue(BUILT_IN_RULE_SETS.contains(STANDARD_PANDEMIC))
         assertTrue(BUILT_IN_RULE_SETS.contains(NATIONAL_CHAMPIONSHIP))
+        assertTrue(BUILT_IN_RULE_SETS.contains(GENCON_2026))
     }
 
     // ── turn order across a full game (regression test for #55) ─────────────
