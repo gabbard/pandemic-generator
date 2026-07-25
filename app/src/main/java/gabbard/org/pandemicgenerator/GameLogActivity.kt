@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityGameLogBinding
 import org.gabbard.pandemicgenerator.GameEvent
+import org.gabbard.pandemicgenerator.NamedEpidemic
 import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.UntrackableState
@@ -63,7 +64,7 @@ class GameLogActivity : AppCompatActivity() {
             // that follows it are shown together under a single "Turn N — <Player>" header.
             var turnNumber = 0
             var lastPlayer: Player? = null
-            var isFirstEpidemicOfGame = true
+            var virulentStrainDetermined = false
             log.forEach { event ->
                 if (event is GameEvent.DrawPlayerCardsEvent || event.player != lastPlayer) {
                     if (turnNumber > 0) {
@@ -80,9 +81,9 @@ class GameLogActivity : AppCompatActivity() {
                         for ((epidemic, city) in event.epidemicsAndInfectedCities) {
                             container.addSectionHeader("Epidemic: ${epidemic.userString}")
                             container.addCityRow(city, "infected from bottom")
-                            if (isFirstEpidemicOfGame) {
+                            if (epidemic is NamedEpidemic && !virulentStrainDetermined) {
                                 container.addFirstEpidemicVirulentStrainExplanation(seed)
-                                isFirstEpidemicOfGame = false
+                                virulentStrainDetermined = true
                             }
                         }
                     }

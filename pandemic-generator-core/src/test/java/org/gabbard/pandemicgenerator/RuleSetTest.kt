@@ -140,11 +140,21 @@ class RuleSetTest {
         assertEquals(6, NATIONAL_CHAMPIONSHIP.availableEpidemics.size)
     }
 
+    @Test
+    fun nationalChampionshipUsesVirulentStrainEpidemics() {
+        assertTrue(NATIONAL_CHAMPIONSHIP.availableEpidemics.all { it is NamedEpidemic })
+    }
+
     // ── STANDARD_PANDEMIC configuration ──────────────────────────────────────
 
     @Test
     fun standardPandemicHasNoTimer() {
         assertNull(STANDARD_PANDEMIC.turnDurationSeconds)
+    }
+
+    @Test
+    fun standardPandemicDoesNotUseVirulentStrainEpidemics() {
+        assertTrue(STANDARD_PANDEMIC.availableEpidemics.all { it is SimpleEpidemic })
     }
 
     @Test

@@ -12,12 +12,14 @@ import org.gabbard.pandemicgenerator.CityState
 import org.gabbard.pandemicgenerator.Color
 import org.gabbard.pandemicgenerator.Deck
 import org.gabbard.pandemicgenerator.EventCard
+import org.gabbard.pandemicgenerator.GameEvent
 import org.gabbard.pandemicgenerator.InfectionCard
 import org.gabbard.pandemicgenerator.InfectionRate
 import org.gabbard.pandemicgenerator.NamedEpidemic
 import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.PlayerCard
 import org.gabbard.pandemicgenerator.Role
+import org.gabbard.pandemicgenerator.SimpleEpidemic
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import org.gabbard.pandemicgenerator.UntrackableState
@@ -51,12 +53,13 @@ class NavigationTest {
     }
 
     private fun drawPlayerCardsIntent(
-        playerCards: List<PlayerCard> = cities.take(5).map { CityPlayerCard(it) }
+        playerCards: List<PlayerCard> = cities.take(5).map { CityPlayerCard(it) },
+        eventLog: List<GameEvent> = emptyList()
     ): Intent = Intent(
         ApplicationProvider.getApplicationContext(),
         DrawPlayerCards::class.java
     ).apply {
-        putExtra(DrawPlayerCards.GAME_STATE, makeTrackableState(playerCards = playerCards))
+        putExtra(DrawPlayerCards.GAME_STATE, makeTrackableState(playerCards = playerCards, eventLog = eventLog))
         putExtra(DrawPlayerCards.RANDOM_SOURCE, Random(42))
         putExtra(DrawPlayerCards.SEED, 42L)
         putExtra(DrawPlayerCards.TURN_DURATION, TurnTimer.NO_TIMER)
@@ -353,6 +356,75 @@ class NavigationTest {
     }
 
     @Test
+    fun drawPlayerCardsWithFirstNamedEpidemicShowsVirulentStrainExplanation() {
+        val playerCards = listOf(
+            NamedEpidemic("Virulent Strain"),
+            CityPlayerCard(cities[0]),
+            CityPlayerCard(cities[1])
+        )
+        ActivityScenario.launch<DrawPlayerCards>(drawPlayerCardsIntent(playerCards = playerCards)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<android.widget.LinearLayout>(R.id.cardsContainer)
+                val texts = (0 until container.childCount)
+                    .mapNotNull { container.getChildAt(it) as? android.widget.TextView }
+                    .map { it.text.toString() }
+                assertTrue(
+                    "Virulent Strain explanation should appear",
+                    texts.any { it.contains("Virulent Strain determination") }
+                )
+            }
+        }
+    }
+
+    @Test
+    fun drawPlayerCardsWithSimpleEpidemicDoesNotShowVirulentStrainExplanation() {
+        val playerCards = listOf(
+            SimpleEpidemic(),
+            CityPlayerCard(cities[0]),
+            CityPlayerCard(cities[1])
+        )
+        ActivityScenario.launch<DrawPlayerCards>(drawPlayerCardsIntent(playerCards = playerCards)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<android.widget.LinearLayout>(R.id.cardsContainer)
+                val texts = (0 until container.childCount)
+                    .mapNotNull { container.getChildAt(it) as? android.widget.TextView }
+                    .map { it.text.toString() }
+                assertTrue(
+                    "Virulent Strain explanation should not appear for a Simple epidemic",
+                    texts.none { it.contains("Virulent Strain determination") }
+                )
+            }
+        }
+    }
+
+    @Test
+    fun drawPlayerCardsDoesNotRepeatVirulentStrainExplanationAfterFirstOccurrence() {
+        val priorEvent = GameEvent.DrawPlayerCardsEvent(
+            cardsDrawn = listOf(NamedEpidemic("Earlier Virulent Strain")),
+            epidemicsAndInfectedCities = listOf(NamedEpidemic("Earlier Virulent Strain") to cities[5]),
+            player = Player(Role("Scientist"))
+        )
+        val playerCards = listOf(
+            NamedEpidemic("Virulent Strain"),
+            CityPlayerCard(cities[0]),
+            CityPlayerCard(cities[1])
+        )
+        val intent = drawPlayerCardsIntent(playerCards = playerCards, eventLog = listOf(priorEvent))
+        ActivityScenario.launch<DrawPlayerCards>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<android.widget.LinearLayout>(R.id.cardsContainer)
+                val texts = (0 until container.childCount)
+                    .mapNotNull { container.getChildAt(it) as? android.widget.TextView }
+                    .map { it.text.toString() }
+                assertTrue(
+                    "Virulent Strain explanation should not repeat once already determined",
+                    texts.none { it.contains("Virulent Strain determination") }
+                )
+            }
+        }
+    }
+
+    @Test
     fun drawPlayerCardsWithEventCardIsDisplayed() {
         val playerCards = listOf(
             EventCard("Airlift"),
@@ -498,7 +570,8 @@ class NavigationTest {
     private fun makeTrackableState(
         playerCards: List<PlayerCard> = cities.take(5).map { CityPlayerCard(it) },
         lastTransition: Transition = Transition.INFECT,
-        roleName: String = "Medic"
+        roleName: String = "Medic",
+        eventLog: List<GameEvent> = emptyList()
     ): TrackableState {
         val players = listOf(Player(Role(roleName)), Player(Role("Scientist")))
         return TrackableState(
@@ -508,7 +581,8 @@ class NavigationTest {
             infectionDiscardPile = cities.drop(10).map { InfectionCard(it) }.toSet(),
             playerDeck = Deck(playerCards),
             infectionRate = InfectionRate.INITIAL,
-            lastTransition = lastTransition
+            lastTransition = lastTransition,
+            eventLog = eventLog
         )
     }
 }
