@@ -185,6 +185,40 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="16dp" />
 
+        <!-- Turn Timer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Turn Timer"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <CheckBox
+                android:id="@+id/use_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Use a timer" />
+
+            <EditText
+                android:id="@+id/turn_duration_seconds"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:hint="Seconds"
+                android:inputType="number"
+                android:text="75"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/save_button"
             android:layout_width="match_parent"

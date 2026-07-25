@@ -64,8 +64,8 @@ fun LinearLayout.addCityRow(city: City, detail: String? = null) =
 
 fun LinearLayout.addPlayerCardRow(card: PlayerCard) = when (card) {
     is CityPlayerCard -> addCityRow(card.city)
-    is EventCard      -> addDotRow(android.graphics.Color.rgb(56, 142, 60), card.name)  // Green 700
-    is Epidemic       -> addDotRow(android.graphics.Color.rgb(183, 28, 28), card.userString)  // Red 900
+    is EventCard      -> addDotRow(android.graphics.Color.rgb(245, 124, 0), card.name)  // Orange 700
+    is Epidemic       -> addDotRow(android.graphics.Color.rgb(56, 142, 60), card.userString)  // Green 700
 }
 
 fun LinearLayout.addSectionHeader(text: String) {

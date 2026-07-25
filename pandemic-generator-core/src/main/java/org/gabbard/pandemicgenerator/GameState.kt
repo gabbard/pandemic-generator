@@ -33,10 +33,17 @@ data class CityState(val infections: Map<Color, Int>) : Serializable {
 data class BoardState(val cityStates: Map<City, CityState>) : Serializable
 
 sealed class GameEvent : Serializable {
-    data class InfectionEvent(val infectedCities: List<City>) : GameEvent()
+    abstract val player: Player
+
+    data class InfectionEvent(
+        val infectedCities: List<City>,
+        override val player: Player
+    ) : GameEvent()
+
     data class DrawPlayerCardsEvent(
         val cardsDrawn: List<PlayerCard>,
-        val epidemicsAndInfectedCities: List<Pair<Epidemic, City>>
+        val epidemicsAndInfectedCities: List<Pair<Epidemic, City>>,
+        override val player: Player
     ) : GameEvent()
 }
 
@@ -84,7 +91,7 @@ data class TrackableState(val curPlayer: Int,
         when (transition) {
             Transition.INFECT -> {
                 val infectionResult = infect()
-                val event = GameEvent.InfectionEvent(infectionResult.infectedCities)
+                val event = GameEvent.InfectionEvent(infectionResult.infectedCities, players[curPlayer])
                 return TransitionResult.Success.InfectionTransitionResult(
                         infectionResult.newGameState.copy(
                                 curPlayer = (curPlayer + 1) % players.size,
@@ -106,7 +113,7 @@ data class TrackableState(val curPlayer: Int,
                     curState = postEpidemicGameState
                     epidemicsToCitiesInfected.add(Pair(epidemic, newCity))
                 }
-                val event = GameEvent.DrawPlayerCardsEvent(cardsDrawn, epidemicsToCitiesInfected)
+                val event = GameEvent.DrawPlayerCardsEvent(cardsDrawn, epidemicsToCitiesInfected, players[curPlayer])
                 return TransitionResult.Success.DrawPlayerCardsTransitionResult(
                         curState.copy(
                                 lastTransition = transition,
