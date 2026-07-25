@@ -68,6 +68,19 @@ fun LinearLayout.addPlayerCardRow(card: PlayerCard) = when (card) {
     is Epidemic       -> addDotRow(android.graphics.Color.rgb(56, 142, 60), card.userString)  // Green 700
 }
 
+fun LinearLayout.addDivider() {
+    val dp = context.resources.displayMetrics.density
+    addView(
+        View(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (1 * dp).toInt()
+            ).also { it.topMargin = (16 * dp).toInt() }
+            setBackgroundColor(android.graphics.Color.LTGRAY)
+        }
+    )
+}
+
 fun LinearLayout.addSectionHeader(text: String) {
     val dp = context.resources.displayMetrics.density
     addView(TextView(context).apply {
