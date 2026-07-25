@@ -239,7 +239,7 @@ class GameLogActivityTest {
             scenario.onActivity { activity ->
                 val headers = headerTexts(activity)
                 val initIndex = headers.indexOfFirst { it.contains("Initialization") }
-                val eventIndex = headers.indexOfFirst { it.contains("Event 1") }
+                val eventIndex = headers.indexOfFirst { it.contains("Turn 1") }
                 assertTrue("Initialization should come before the event log", initIndex in 0 until eventIndex)
             }
         }
