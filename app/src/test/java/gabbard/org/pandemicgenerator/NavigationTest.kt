@@ -6,7 +6,10 @@ import android.view.View
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.gabbard.pandemicgenerator.ALL_CITIES
+import org.gabbard.pandemicgenerator.BoardState
 import org.gabbard.pandemicgenerator.CityPlayerCard
+import org.gabbard.pandemicgenerator.CityState
+import org.gabbard.pandemicgenerator.Color
 import org.gabbard.pandemicgenerator.Deck
 import org.gabbard.pandemicgenerator.EventCard
 import org.gabbard.pandemicgenerator.InfectionCard
@@ -17,6 +20,7 @@ import org.gabbard.pandemicgenerator.PlayerCard
 import org.gabbard.pandemicgenerator.Role
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
+import org.gabbard.pandemicgenerator.UntrackableState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -208,13 +212,27 @@ class NavigationTest {
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private fun turnTimerIntent(roleName: String = "Medic"): Intent =
+    private fun turnTimerIntent(roleName: String = "Medic", withInitialState: Boolean = false): Intent =
         Intent(context, TurnTimer::class.java).apply {
             putExtra(TurnTimer.GAME_STATE, makeTrackableState(roleName = roleName))
             putExtra(TurnTimer.RANDOM_SOURCE, Random(42))
             putExtra(TurnTimer.SEED, 42L)
             putExtra(TurnTimer.TURN_DURATION, TurnTimer.NO_TIMER)
+            if (withInitialState) {
+                putExtra(TurnTimer.INITIAL_STATE, makeUntrackableState(roleName = roleName))
+            }
         }
+
+    private fun makeUntrackableState(roleName: String = "Medic"): UntrackableState {
+        val players = listOf(Player(Role(roleName)), Player(Role("Scientist")))
+        val hands = players.associateWith { cities.take(4).map { c -> CityPlayerCard(c) }.toSet() }
+        val cityStates = mapOf(
+            cities[10] to CityState(mapOf(Color.BLUE to 3)),
+            cities[11] to CityState(mapOf(Color.YELLOW to 2)),
+            cities[12] to CityState(mapOf(Color.BLACK to 1))
+        )
+        return UntrackableState(BoardState(cityStates), hands)
+    }
 
     // ── MainActivity resume-game click ────────────────────────────────────────
 
@@ -384,6 +402,88 @@ class NavigationTest {
                 val started = shadowOf(activity).nextStartedActivity
                 @Suppress("DEPRECATION")
                 assertNotNull(started?.getSerializableExtra(GameLogActivity.GAME_STATE))
+            }
+        }
+    }
+
+    // ── INITIAL_STATE threading through the activity chain ─────────────────────
+
+    @Test
+    fun turnTimerForwardsInitialStateToDrawPlayerCards() {
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent(withInitialState = true)).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.drawPlayerCards).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(
+                    "INITIAL_STATE should be forwarded to DrawPlayerCards",
+                    started.getSerializableExtra(DrawPlayerCards.INITIAL_STATE)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun drawPlayerCardsForwardsInitialStateToInfectionActivity() {
+        val intent = drawPlayerCardsIntent().apply {
+            putExtra(DrawPlayerCards.INITIAL_STATE, makeUntrackableState())
+        }
+        ActivityScenario.launch<DrawPlayerCards>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.proceedToInfectionPhase).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(
+                    "INITIAL_STATE should be forwarded to InfectionActivity",
+                    started.getSerializableExtra(InfectionActivity.INITIAL_STATE)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun infectionActivityForwardsInitialStateToTurnTimer() {
+        val intent = infectionActivityIntent().apply {
+            putExtra(InfectionActivity.INITIAL_STATE, makeUntrackableState())
+        }
+        ActivityScenario.launch<InfectionActivity>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.nextTurn).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(
+                    "INITIAL_STATE should be forwarded back to TurnTimer",
+                    started.getSerializableExtra(TurnTimer.INITIAL_STATE)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun viewLogMenuItemFromTurnTimerIncludesInitialStateWhenAvailable() {
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent(withInitialState = true)).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertNotNull(
+                    "INITIAL_STATE should be passed to GameLogActivity when available",
+                    started?.getSerializableExtra(GameLogActivity.INITIAL_STATE)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun viewLogMenuItemOmitsInitialStateWhenUnavailable() {
+        // The default turnTimerIntent() (as used by a resumed saved game) carries no
+        // INITIAL_STATE extra, so the Game Log should simply not receive one either.
+        ActivityScenario.launch<TurnTimer>(turnTimerIntent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.onOptionsItemSelected(RoboMenuItem(R.id.action_view_log))
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                assertEquals(null, started?.getSerializableExtra(GameLogActivity.INITIAL_STATE))
             }
         }
     }

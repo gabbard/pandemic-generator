@@ -6,11 +6,13 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import org.gabbard.pandemicgenerator.TrackableState
+import org.gabbard.pandemicgenerator.UntrackableState
 
 abstract class GameActivity : AppCompatActivity() {
 
     protected open fun gameStateForLog(): TrackableState? = null
     protected open fun seedForLog(): Long = 0
+    protected open fun initialStateForLog(): UntrackableState? = null
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_game, menu)
@@ -24,6 +26,7 @@ abstract class GameActivity : AppCompatActivity() {
                 startActivity(Intent(this, GameLogActivity::class.java).apply {
                     putExtra(GameLogActivity.GAME_STATE, state)
                     putExtra(GameLogActivity.SEED, seedForLog())
+                    initialStateForLog()?.let { putExtra(GameLogActivity.INITIAL_STATE, it) }
                 })
             }
             true

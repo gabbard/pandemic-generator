@@ -7,6 +7,7 @@ import gabbard.org.pandemicgenerator.databinding.ActivityInfectionBinding
 import org.gabbard.pandemicgenerator.City
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
+import org.gabbard.pandemicgenerator.UntrackableState
 import java.util.*
 
 class InfectionActivity : GameActivity() {
@@ -15,12 +16,14 @@ class InfectionActivity : GameActivity() {
     private var rng: Random? = null
     private var seed: Long = 0
     private var infectedCities: List<City> = emptyList()
+    private var initialState: UntrackableState? = null
 
     companion object {
         const val GAME_STATE = "game_state"
         const val RANDOM_SOURCE = "random_source"
         const val SEED = "seed"
         const val TURN_DURATION = "turn_duration"
+        const val INITIAL_STATE = "initial_state"
         private const val RESULT_GAME_STATE = "result_game_state"
         private const val RESULT_INFECTED_CITIES = "result_infected_cities"
     }
@@ -34,6 +37,8 @@ class InfectionActivity : GameActivity() {
         @Suppress("DEPRECATION")
         rng = intent.getSerializableExtra(InfectionActivity.RANDOM_SOURCE) as Random
         seed = intent.getLongExtra(SEED, 0)
+        @Suppress("DEPRECATION")
+        initialState = intent.getSerializableExtra(INITIAL_STATE) as? UntrackableState
         binding.seedDisplay.text = "Seed: $seed"
         binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
@@ -65,6 +70,7 @@ class InfectionActivity : GameActivity() {
 
     override fun gameStateForLog() = gameState
     override fun seedForLog() = seed
+    override fun initialStateForLog() = initialState
 
     fun onNextTurn(@Suppress("UNUSED_PARAMETER") view: View) {
         val turnTimerIntent = Intent(this, TurnTimer::class.java)
@@ -72,6 +78,7 @@ class InfectionActivity : GameActivity() {
         turnTimerIntent.putExtra(TurnTimer.RANDOM_SOURCE, rng!!)
         turnTimerIntent.putExtra(TurnTimer.SEED, seed)
         turnTimerIntent.putExtra(TurnTimer.TURN_DURATION, intent.getIntExtra(TURN_DURATION, TurnTimer.NO_TIMER))
+        initialState?.let { turnTimerIntent.putExtra(TurnTimer.INITIAL_STATE, it) }
         startActivity(turnTimerIntent)
     }
 }

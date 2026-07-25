@@ -84,6 +84,7 @@ class InitialSetup : GameActivity() {
             putExtra(TurnTimer.RANDOM_SOURCE, rng)
             putExtra(TurnTimer.SEED, seed)
             putExtra(TurnTimer.TURN_DURATION, gameRules!!.turnDurationSeconds ?: -1)
+            putExtra(TurnTimer.INITIAL_STATE, fullGameState!!.untrackableState)
         })
     }
 }

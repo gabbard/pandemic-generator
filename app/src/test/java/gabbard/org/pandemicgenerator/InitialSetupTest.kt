@@ -143,4 +143,19 @@ class InitialSetupTest {
         assertEquals(before, after)
         assertTrue("Sanity check: expected some content to compare", before.isNotEmpty())
     }
+
+    @Test
+    fun readyToPlayPassesInitialStateToTurnTimer() {
+        // The initial hands/board computed in InitialSetup should be threaded to
+        // TurnTimer so it can eventually reach the Game Log's Initialization section.
+        ActivityScenario.launch<InitialSetup>(intent()).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<android.view.View>(R.id.button3).performClick()
+                val started = shadowOf(activity).nextStartedActivity
+                @Suppress("DEPRECATION")
+                val initialState = started.getSerializableExtra(TurnTimer.INITIAL_STATE)
+                assertNotNull("INITIAL_STATE should be passed to TurnTimer", initialState)
+            }
+        }
+    }
 }
