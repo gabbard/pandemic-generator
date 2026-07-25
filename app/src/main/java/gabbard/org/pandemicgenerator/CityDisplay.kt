@@ -11,6 +11,7 @@ import org.gabbard.pandemicgenerator.CityPlayerCard
 import org.gabbard.pandemicgenerator.Epidemic
 import org.gabbard.pandemicgenerator.EventCard
 import org.gabbard.pandemicgenerator.PlayerCard
+import org.gabbard.pandemicgenerator.seededColorTiebreakOrder
 import org.gabbard.pandemicgenerator.Color as GameColor
 
 fun GameColor.toAndroidColor(): Int = when (this) {
@@ -76,4 +77,32 @@ fun LinearLayout.addSectionHeader(text: String) {
         setTextColor(android.graphics.Color.GRAY)
         setPadding(0, (14 * dp).toInt(), 0, (4 * dp).toInt())
     })
+}
+
+fun LinearLayout.addTextRow(text: String) {
+    val dp = context.resources.displayMetrics.density
+    addView(TextView(context).apply {
+        this.text = text
+        textSize = 13f
+        setPadding(0, (2 * dp).toInt(), 0, (2 * dp).toInt())
+    })
+}
+
+/**
+ * Explains, for the first Virulent Strain epidemic drawn in a game, how to determine which
+ * disease color becomes virulent. Cube counts are compared only after the city drawn from the
+ * bottom of the infection deck (shown just above this note) has had its cubes placed, and ties
+ * are broken using a color ranking seeded from this game's seed so it's reproducible.
+ */
+fun LinearLayout.addFirstEpidemicVirulentStrainExplanation(seed: Long) {
+    addSectionHeader("Virulent Strain determination")
+    addTextRow(
+        "This is the first Epidemic, so it determines which disease becomes virulent for " +
+            "the rest of the game. Count cubes on the board AFTER placing cubes for the city " +
+            "just infected from the bottom of the infection deck above. The color with the " +
+            "most cubes becomes the virulent strain."
+    )
+    val tiebreakOrder = seededColorTiebreakOrder(seed).joinToString(" > ") { it.name }
+    addTextRow("If there is a tie, use this seeded color ranking to break it:")
+    addTextRow("Using randomly seeded color ranking: $tiebreakOrder")
 }

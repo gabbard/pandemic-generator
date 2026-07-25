@@ -7,6 +7,7 @@ import gabbard.org.pandemicgenerator.databinding.ActivityGameLogBinding
 import org.gabbard.pandemicgenerator.GameEvent
 import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.TrackableState
+import org.gabbard.pandemicgenerator.seededColorTiebreakOrder
 
 class GameLogActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGameLogBinding
@@ -37,6 +38,7 @@ class GameLogActivity : AppCompatActivity() {
             // that follows it are shown together under a single "Turn N — <Player>" header.
             var turnNumber = 0
             var lastPlayer: Player? = null
+            var isFirstEpidemicOfGame = true
             log.forEach { event ->
                 if (event is GameEvent.DrawPlayerCardsEvent || event.player != lastPlayer) {
                     turnNumber++
@@ -49,6 +51,10 @@ class GameLogActivity : AppCompatActivity() {
                         for ((epidemic, city) in event.epidemicsAndInfectedCities) {
                             container.addSectionHeader("Epidemic: ${epidemic.userString}")
                             container.addCityRow(city, "infected from bottom")
+                            if (isFirstEpidemicOfGame) {
+                                container.addFirstEpidemicVirulentStrainExplanation(seed)
+                                isFirstEpidemicOfGame = false
+                            }
                         }
                     }
                     is GameEvent.InfectionEvent -> {
