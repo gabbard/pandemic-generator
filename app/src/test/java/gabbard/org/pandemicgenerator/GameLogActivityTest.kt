@@ -161,10 +161,10 @@ class GameLogActivityTest {
             scenario.onActivity { activity ->
                 val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
                 val children = (0 until container.childCount).map { container.getChildAt(it) }
-                val dividerCount = children.count { it !is TextView }
+                val dividerCount = children.count { it.tag == TURN_DIVIDER_TAG }
                 assertEquals("There should be exactly one divider, between the two turns", 1, dividerCount)
 
-                val firstHeaderIndex = children.indexOfFirst { it is TextView && (it as TextView).text.contains("Turn 1") }
+                val firstHeaderIndex = children.indexOfFirst { it is TextView && it.text.contains("Turn 1") }
                 assertEquals("Nothing should precede the first turn's header", 0, firstHeaderIndex)
             }
         }

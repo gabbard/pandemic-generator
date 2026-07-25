@@ -68,10 +68,13 @@ fun LinearLayout.addPlayerCardRow(card: PlayerCard) = when (card) {
     is Epidemic       -> addDotRow(android.graphics.Color.rgb(56, 142, 60), card.userString)  // Green 700
 }
 
+const val TURN_DIVIDER_TAG = "turn_divider"
+
 fun LinearLayout.addDivider() {
     val dp = context.resources.displayMetrics.density
     addView(
         View(context).apply {
+            tag = TURN_DIVIDER_TAG
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 (1 * dp).toInt()
