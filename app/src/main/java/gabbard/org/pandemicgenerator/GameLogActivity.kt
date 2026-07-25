@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import gabbard.org.pandemicgenerator.databinding.ActivityGameLogBinding
 import org.gabbard.pandemicgenerator.GameEvent
+import org.gabbard.pandemicgenerator.Player
 import org.gabbard.pandemicgenerator.TrackableState
 
 class GameLogActivity : AppCompatActivity() {
@@ -30,10 +31,20 @@ class GameLogActivity : AppCompatActivity() {
         if (log.isEmpty()) {
             container.addSectionHeader("No events yet")
         } else {
-            log.forEachIndexed { index, event ->
+            // Group the chronological event log into per-turn sections: a turn begins
+            // whenever a player draws cards, or whenever the acting player changes (which
+            // can only happen at a turn boundary), so a player's draw and the infection
+            // that follows it are shown together under a single "Turn N — <Player>" header.
+            var turnNumber = 0
+            var lastPlayer: Player? = null
+            log.forEach { event ->
+                if (event is GameEvent.DrawPlayerCardsEvent || event.player != lastPlayer) {
+                    turnNumber++
+                    container.addSectionHeader("Turn $turnNumber — ${event.player.role.name}")
+                }
+                lastPlayer = event.player
                 when (event) {
                     is GameEvent.DrawPlayerCardsEvent -> {
-                        container.addSectionHeader("Event ${index + 1}: Drew Player Cards")
                         event.cardsDrawn.forEach { container.addPlayerCardRow(it) }
                         for ((epidemic, city) in event.epidemicsAndInfectedCities) {
                             container.addSectionHeader("Epidemic: ${epidemic.userString}")
@@ -41,7 +52,6 @@ class GameLogActivity : AppCompatActivity() {
                         }
                     }
                     is GameEvent.InfectionEvent -> {
-                        container.addSectionHeader("Event ${index + 1}: Infection")
                         event.infectedCities.forEach { container.addCityRow(it) }
                     }
                 }

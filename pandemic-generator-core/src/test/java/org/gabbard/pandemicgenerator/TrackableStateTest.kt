@@ -228,6 +228,47 @@ class TrackableStateTest {
         assertTrue(state.eventLog.isEmpty())
     }
 
+    @Test
+    fun infectionEventRecordsActingPlayer() {
+        val state = makeState(lastTransition = Transition.DRAW_PLAYER_CARDS)
+        val result = state.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success.InfectionTransitionResult
+        val event = result.newGameState.eventLog[0] as GameEvent.InfectionEvent
+        assertEquals(state.players[state.curPlayer], event.player)
+    }
+
+    @Test
+    fun drawPlayerCardsEventRecordsActingPlayer() {
+        val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val result = state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult
+        val event = result.newGameState.eventLog[0] as GameEvent.DrawPlayerCardsEvent
+        assertEquals(state.players[state.curPlayer], event.player)
+    }
+
+    @Test
+    fun eventLogAttributesEventsToCorrectPlayerAcrossTurns() {
+        val cityCards = ALL_CITIES.take(5).map { CityPlayerCard(it) }
+        val state = makeState(playerCards = cityCards, lastTransition = Transition.INFECT)
+        val medic = state.players[0]
+        val scientist = state.players[1]
+
+        val afterDraw = (state.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        val afterInfect = (afterDraw.executeTransition(Transition.INFECT, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+        val afterDraw2 = (afterInfect.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success).newGameState
+
+        assertEquals(3, afterDraw2.eventLog.size)
+        // First turn (draw + infect) belongs to the player who was current before infect advanced curPlayer.
+        assertEquals(medic, afterDraw2.eventLog[0].player)
+        assertEquals(medic, afterDraw2.eventLog[1].player)
+        // Second turn's draw belongs to the next player.
+        assertEquals(scientist, afterDraw2.eventLog[2].player)
+    }
+
     // ── player deck exhaustion ───────────────────────────────────────────────
 
     @Test
