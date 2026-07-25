@@ -65,7 +65,23 @@ val STANDARD_PANDEMIC = RuleSet(
     allowedPlayerCounts = listOf(2, 3, 4)
 )
 
-val BUILT_IN_RULE_SETS: List<RuleSet> = listOf(STANDARD_PANDEMIC, NATIONAL_CHAMPIONSHIP)
+val GENCON_2026 = RuleSet(
+    name = "GenCon 2026",
+    availableRoles = COMPETITIVE_PLAY_ROLES,
+    availableEpidemics = STANDARD_PANDEMIC_EPIDEMICS,
+    availableEvents = ALL_KNOWN_EVENTS,
+    numEventsToUse = ALL_KNOWN_EVENTS.size,
+    availableDifficulties = listOf(
+        Difficulty("Introductory", 4),
+        Difficulty("Normal", 5),
+        Difficulty("Heroic", 6)
+    ),
+    allowedPlayerCounts = listOf(2, 3, 4),
+    turnDurationSeconds = 75
+)
+
+val BUILT_IN_RULE_SETS: List<RuleSet> =
+    listOf(STANDARD_PANDEMIC, NATIONAL_CHAMPIONSHIP, GENCON_2026)
 
 // backward-compatible name used by CLI and tests
 val NATIONAL_CHAMPIONSHIP_RULES: GameRules = NATIONAL_CHAMPIONSHIP.buildGameRules(
