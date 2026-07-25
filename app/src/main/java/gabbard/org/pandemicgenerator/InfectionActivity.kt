@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import gabbard.org.pandemicgenerator.databinding.ActivityInfectionBinding
+import org.gabbard.pandemicgenerator.City
 import org.gabbard.pandemicgenerator.TrackableState
 import org.gabbard.pandemicgenerator.Transition
 import org.gabbard.pandemicgenerator.UntrackableState
@@ -14,6 +15,7 @@ class InfectionActivity : GameActivity() {
     private var gameState: TrackableState? = null
     private var rng: Random? = null
     private var seed: Long = 0
+    private var infectedCities: List<City> = emptyList()
     private var initialState: UntrackableState? = null
 
     companion object {
@@ -22,6 +24,8 @@ class InfectionActivity : GameActivity() {
         const val SEED = "seed"
         const val TURN_DURATION = "turn_duration"
         const val INITIAL_STATE = "initial_state"
+        private const val RESULT_GAME_STATE = "result_game_state"
+        private const val RESULT_INFECTED_CITIES = "result_infected_cities"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,12 +42,30 @@ class InfectionActivity : GameActivity() {
         binding.seedDisplay.text = "Seed: $seed"
         binding.currentPlayerRole.text = gameState!!.players[gameState!!.curPlayer].role.name
 
-        val result = gameState!!.executeTransition(Transition.INFECT, rng!!)
-                as TrackableState.TransitionResult.Success.InfectionTransitionResult
-        gameState = result.newGameState
+        // executeTransition() mutates rng and must only run once per turn; on
+        // recreation (rotation, or process death while the activity is still in
+        // the back stack) restore the previously computed result instead of
+        // redrawing it.
+        if (savedInstanceState == null) {
+            val result = gameState!!.executeTransition(Transition.INFECT, rng!!)
+                    as TrackableState.TransitionResult.Success.InfectionTransitionResult
+            gameState = result.newGameState
+            infectedCities = result.infectedCities
+        } else {
+            @Suppress("DEPRECATION")
+            gameState = savedInstanceState.getSerializable(RESULT_GAME_STATE) as TrackableState
+            @Suppress("UNCHECKED_CAST", "DEPRECATION")
+            infectedCities = savedInstanceState.getSerializable(RESULT_INFECTED_CITIES) as List<City>
+        }
 
         binding.infectedCities.addSectionHeader("Cities infected this turn:")
-        result.infectedCities.forEach { binding.infectedCities.addCityRow(it) }
+        infectedCities.forEach { binding.infectedCities.addCityRow(it) }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable(RESULT_GAME_STATE, gameState)
+        outState.putSerializable(RESULT_INFECTED_CITIES, ArrayList(infectedCities))
     }
 
     override fun gameStateForLog() = gameState
