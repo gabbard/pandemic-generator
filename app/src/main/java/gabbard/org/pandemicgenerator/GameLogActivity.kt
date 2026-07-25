@@ -66,12 +66,16 @@ class GameLogActivity : AppCompatActivity() {
             var isFirstEpidemicOfGame = true
             log.forEach { event ->
                 if (event is GameEvent.DrawPlayerCardsEvent || event.player != lastPlayer) {
+                    if (turnNumber > 0) {
+                        container.addDivider()
+                    }
                     turnNumber++
                     container.addSectionHeader("Turn $turnNumber — ${event.player.role.name}")
                 }
                 lastPlayer = event.player
                 when (event) {
                     is GameEvent.DrawPlayerCardsEvent -> {
+                        container.addSectionHeader("Draw phase")
                         event.cardsDrawn.forEach { container.addPlayerCardRow(it) }
                         for ((epidemic, city) in event.epidemicsAndInfectedCities) {
                             container.addSectionHeader("Epidemic: ${epidemic.userString}")
@@ -83,6 +87,7 @@ class GameLogActivity : AppCompatActivity() {
                         }
                     }
                     is GameEvent.InfectionEvent -> {
+                        container.addSectionHeader("Infection phase")
                         event.infectedCities.forEach { container.addCityRow(it) }
                     }
                 }

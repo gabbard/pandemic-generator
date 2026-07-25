@@ -131,6 +131,46 @@ class GameLogActivityTest {
     }
 
     @Test
+    fun drawAndInfectionPhasesAreLabeledSeparately() {
+        val afterDraw = stateAfterDraw()
+        val afterInfect = stateAfterInfect(afterDraw)
+
+        ActivityScenario.launch<GameLogActivity>(intentFor(afterInfect)).use { scenario ->
+            scenario.onActivity { activity ->
+                val headers = headerTexts(activity)
+                assertTrue("Draw phase header should appear", headers.any { it.contains("Draw phase") })
+                assertTrue("Infection phase header should appear", headers.any { it.contains("Infection phase") })
+                assertTrue(
+                    "Draw phase should come before Infection phase",
+                    headers.indexOfFirst { it.contains("Draw phase") } <
+                        headers.indexOfFirst { it.contains("Infection phase") }
+                )
+            }
+        }
+    }
+
+    @Test
+    fun dividerSeparatesTurnsButNotFirstTurn() {
+        val afterFirstDraw = stateAfterDraw()
+        val afterFirstInfect = stateAfterInfect(afterFirstDraw)
+        val afterSecondDraw = (afterFirstInfect.executeTransition(Transition.DRAW_PLAYER_CARDS, rng)
+                as TrackableState.TransitionResult.Success.DrawPlayerCardsTransitionResult)
+            .newGameState
+
+        ActivityScenario.launch<GameLogActivity>(intentFor(afterSecondDraw)).use { scenario ->
+            scenario.onActivity { activity ->
+                val container = activity.findViewById<LinearLayout>(R.id.eventLogContainer)
+                val children = (0 until container.childCount).map { container.getChildAt(it) }
+                val dividerCount = children.count { it.tag == TURN_DIVIDER_TAG }
+                assertEquals("There should be exactly one divider, between the two turns", 1, dividerCount)
+
+                val firstHeaderIndex = children.indexOfFirst { it is TextView && it.text.contains("Turn 1") }
+                assertEquals("Nothing should precede the first turn's header", 0, firstHeaderIndex)
+            }
+        }
+    }
+
+    @Test
     fun secondPlayersTurnGetsItsOwnHeader() {
         // Simulate a full round: player 0 draws + infects, then player 1 draws.
         val afterFirstDraw = stateAfterDraw()
